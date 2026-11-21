@@ -1,0 +1,7 @@
+.build/
+.scratch/
+dist/
+references/
+.DS_Store
+*.swp
+*~

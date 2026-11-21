@@ -1,0 +1,71 @@
+/* 蒼鷹輸入法的英文介面文字。鍵是程式裡的中文原文，見 Sources/GoshawkApp/Localization.swift。
+   打包驗證會比對 UIText 的每個成員，少一條就失敗。 */
+
+"蒼鷹輸入法 (Goshawk)" = "Goshawk";
+
+/* 輸入法選單 */
+"純英文模式（雙擊 Shift）" = "English-only Mode (Double-tap Shift)";
+"中英混打模式" = "Mixed Chinese and English";
+"中英與中數自動補空格" = "Add a space between Chinese and English or numbers";
+"使用半形標點符號" = "Use half-width punctuation";
+"工程與程式英文詞庫" = "Engineering and programming vocabulary";
+"Ctrl + [ ] 輸出全形引號" = "Ctrl + [ ] types full-width quotation marks";
+"清除學習紀錄" = "Clear Learning History";
+"設定…" = "Settings…";
+
+/* 讀音反查面板 */
+"單字讀音反查" = "Reading Lookup";
+"注音" = "Zhuyin";
+"拼音" = "Pinyin";
+"打注音查單字" = "Type Zhuyin to find a character";
+"打拼音查單字" = "Type Pinyin to find a character";
+"查無此讀音" = "No character has this reading";
+"本代未收錄" = "Not in this generation";
+"↓ 選字  Tab 切換方案  Esc 關閉" = "↓ Select  Tab Keyboard  Esc Close";
+"1–9 選字  PgUp／PgDn 翻頁  Esc 關閉" = "1–9 Select  PgUp/PgDn Page  Esc Close";
+"第 %1$d 頁，共 %2$d 頁" = "Page %1$d of %2$d";
+"第 %1$d 列，%2$@，字母碼 %3$@，字根 %4$@" = "Row %1$d, %2$@, code %3$@, radicals %4$@";
+"第 %1$d 列，%2$@，本代未收錄" = "Row %1$d, %2$@, not in this generation";
+"，" = ", ";
+
+/* 一鍵反悔 */
+"⇧空白 改成 %1$@" = "⇧Space → %1$@";
+
+/* 行內程式片段語境 */
+"片段" = "Code";
+
+/* 倉頡代別 */
+"倉頡五代" = "Cangjie 5";
+"倉頡三代" = "Cangjie 3";
+
+/* 設定視窗 */
+"蒼鷹輸入法設定" = "Goshawk Settings";
+"輸入" = "Input";
+"排版與標點" = "Spacing and Punctuation";
+"學習" = "Learning";
+"讀音反查" = "Reading Lookup";
+"關於" = "About";
+"倉頡代別" = "Cangjie generation";
+"預設鍵盤方案" = "Default keyboard";
+"送出後可用 Shift+空白 對調中英文或標點寬度" = "Shift+Space swaps the last commit between Chinese and English, or the last punctuation width";
+"依使用習慣調整英文預測" = "Adapt English predictions to my usage";
+"依使用習慣調整倉頡重碼順序" = "Adapt the order of Cangjie candidates to my usage";
+"關閉後同一組按鍵永遠送出同一個字。" = "When this is off, the same keys always commit the same character.";
+"依使用習慣調整讀音反查順序" = "Adapt the order of reading lookup results to my usage";
+"學習紀錄只存在這台電腦，不會上傳。" = "The learning history stays on this Mac. Goshawk never uploads it.";
+"清除學習紀錄…" = "Clear Learning History…";
+"要清除學習紀錄嗎？" = "Clear the learning history?";
+"英文預測、倉頡重碼與讀音反查的順序都會回到預設。這個動作無法還原。" = "English predictions, Cangjie candidates and reading lookup results all return to their default order. You cannot undo this.";
+"清除" = "Clear";
+"取消" = "Cancel";
+"要安裝蒼鷹輸入法嗎？" = "Install Goshawk?";
+"會把蒼鷹複製到你的「資源庫／Input Methods」並加入輸入來源。只裝給目前這個使用者。" = "Goshawk is copied to your Library/Input Methods folder and added to your input sources. It is installed for the current user only.";
+"安裝" = "Install";
+"安裝完成" = "Goshawk is installed";
+"從選單列的輸入法選單選「蒼鷹輸入法」就能開始打字。選單裡沒有的話，到「系統設定」→「鍵盤」→「文字輸入」→「編輯」，按「＋」在「繁體中文」裡加入。" = "Choose Goshawk from the input menu in the menu bar to start typing. If it is not in the menu, open System Settings > Keyboard > Text Input > Edit, click +, and add it under Traditional Chinese.";
+"安裝沒有完成" = "Goshawk was not installed";
+"好" = "OK";
+"版本 %1$@" = "Version %1$@";
+"原始碼採 MIT 授權。" = "The source code is under the MIT license.";
+"隨附詞庫的來源與授權見 THIRD_PARTY_NOTICES.md。" = "THIRD_PARTY_NOTICES.md lists the source and license of each bundled lexicon.";
+"開啟 THIRD_PARTY_NOTICES.md" = "Open THIRD_PARTY_NOTICES.md";
