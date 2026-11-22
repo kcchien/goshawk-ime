@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 30 秒上手指南與完整操作說明
+    url: https://goshawk.kcchien.com
+    about: 查看完整使用指南、終端機相容說明、快捷鍵速查與線上互動練習場
+  - name: 下載最新版 GoshawkIME.dmg
+    url: https://github.com/kcchien/goshawk-ime/releases/latest
+    about: 取得最新公證發行版與變更紀錄

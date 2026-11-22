@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="蒼鷹輸入法 Goshawk IME：macOS 倉頡與英文無縫混打輸入法">
+  <defs>
+    <linearGradient id="canvasBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0C2629"/>
+      <stop offset="55%" stop-color="#143D40"/>
+      <stop offset="100%" stop-color="#225756"/>
+    </linearGradient>
+    <linearGradient id="iconBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#286563"/>
+      <stop offset="100%" stop-color="#0F3236"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="128%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#051113" flood-opacity="0.45"/>
+    </filter>
+    <filter id="popShadow" x="-10%" y="-12%" width="120%" height="132%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#061416" flood-opacity="0.22"/>
+    </filter>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang TC", "Noto Sans TC", sans-serif; }
+      .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#canvasBg)"/>
+
+  <!-- Subtle architectural grid accent -->
+  <circle cx="1080" cy="110" r="240" fill="rgba(143,184,165,0.06)"/>
+  <circle cx="140" cy="560" r="210" fill="rgba(230,170,86,0.05)"/>
+
+  <!-- Left brand column -->
+  <g transform="translate(84, 96)">
+    <!-- Goshawk emblem (exact geometry from artwork/Goshawk.svg) -->
+    <g transform="scale(1.06)">
+      <rect x="5" y="5" width="94" height="94" rx="22" fill="url(#iconBg)" stroke="rgba(244,240,218,0.22)" stroke-width="1.5"/>
+      <path fill="#F4F0DA" d="M17 77 28 48Q39 20 62 25 76 27 83 43L91 48Q98 55 88 67 90 57 80 56L69 57Q60 62 57 78L40 88 47 71 28 84 35 66Z"/>
+      <path fill="#175250" d="M38 39Q52 28 67 33L83 44 66 42Q52 36 38 39Z"/>
+      <path fill="#133A3B" d="M55 43 80 47 71 51Q61 54 55 43Z"/>
+      <circle cx="69" cy="47.5" r="2.5" fill="#E6AA56"/>
+      <path fill="#8FB8A5" d="M24 66 47 47 34 65 42 61 28 77Z"/>
+    </g>
+
+    <text x="0" y="182" class="sans" font-size="60" font-weight="700" fill="#F4F0DA">蒼鷹輸入法</text>
+    <text x="2" y="226" class="sans" font-size="25" font-weight="500" fill="#8FB8A5">Goshawk IME · Cangjie &amp; English for macOS</text>
+
+    <text x="2" y="286" class="sans" font-size="22" fill="rgba(244,240,218,0.92)">中文照常拆碼，英文直接拼，空格自動補上。</text>
+    <text x="2" y="320" class="sans" font-size="22" fill="rgba(244,240,218,0.82)">不切換輸入法、不打斷心流。</text>
+
+    <!-- Trust badges -->
+    <g transform="translate(0, 376)">
+      <rect x="0" y="0" width="128" height="36" rx="18" fill="rgba(244,240,218,0.10)" stroke="rgba(244,240,218,0.22)"/>
+      <text x="64" y="23" text-anchor="middle" class="sans" font-size="14" font-weight="500" fill="#F4F0DA">倉頡三代 / 五代</text>
+
+      <rect x="142" y="0" width="124" height="36" rx="18" fill="rgba(244,240,218,0.10)" stroke="rgba(244,240,218,0.22)"/>
+      <text x="204" y="23" text-anchor="middle" class="sans" font-size="14" font-weight="500" fill="#F4F0DA">macOS 14+</text>
+
+      <rect x="280" y="0" width="142" height="36" rx="18" fill="rgba(244,240,218,0.10)" stroke="rgba(244,240,218,0.22)"/>
+      <text x="351" y="23" text-anchor="middle" class="sans" font-size="14" font-weight="500" fill="#E6AA56">純離線 · MIT 開源</text>
+    </g>
+
+    <text x="2" y="458" class="mono" font-size="16" fill="rgba(143,184,165,0.90)">goshawk.kcchien.com</text>
+  </g>
+
+  <!-- Right interactive preview card -->
+  <g transform="translate(684, 118)" filter="url(#cardShadow)">
+    <rect width="516" height="404" rx="16" fill="#FFFFFF"/>
+    <path d="M16 0 H500 A16 16 0 0 1 516 16 V46 H0 V16 A16 16 0 0 1 16 0 Z" fill="#F3F3F1"/>
+    <line x1="0" y1="46" x2="516" y2="46" stroke="#E2E2DE" stroke-width="1"/>
+    <circle cx="24" cy="23" r="6.5" fill="#FF5F57"/>
+    <circle cx="46" cy="23" r="6.5" fill="#FEBC2E"/>
+    <circle cx="68" cy="23" r="6.5" fill="#28C840"/>
+    <text x="258" y="28" text-anchor="middle" class="sans" font-size="14" font-weight="500" fill="#5A6364">工作筆記.rtf</text>
+
+    <!-- Text content -->
+    <text x="36" y="114" class="sans" font-size="30" fill="#162223">下午用 Zoom 開會。</text>
+    <text x="36" y="168" class="sans" font-size="30" fill="#162223">會前請用</text>
+    <text x="164" y="168" class="mono" font-size="30" fill="#162223">id</text>
+    <line x1="164" y1="175" x2="202" y2="175" stroke="#215C52" stroke-width="2.5"/>
+    <rect x="204" y="140" width="2.5" height="34" rx="1" fill="#215C52"/>
+
+    <!-- Floating dual-track popover -->
+    <g transform="translate(132, 194)" filter="url(#popShadow)">
+      <rect width="340" height="104" rx="12" fill="#F8F8F5" stroke="rgba(15,50,54,0.18)" stroke-width="1"/>
+      <text x="18" y="37" class="mono" font-size="18" font-weight="700" fill="#162223">id</text>
+      <text x="48" y="36" class="sans" font-size="14" font-weight="500" fill="#4E6062">Tab  |  ⇧2 idea  ⇧3 ideas</text>
+      <line x1="16" y1="53" x2="324" y2="53" stroke="rgba(15,50,54,0.12)" stroke-width="1"/>
+      <text x="18" y="84" class="sans" font-size="16" fill="#6B7D7F">戈木</text>
+      <rect x="64" y="62" width="34" height="30" rx="6" fill="#215C52"/>
+      <text x="81" y="84" text-anchor="middle" class="sans" font-size="21" font-weight="700" fill="#FFFFFF">床</text>
+      <text x="114" y="83" class="sans" font-size="13.5" fill="#6B7D7F">空白鍵送中文 · Tab 送英文</text>
+    </g>
+
+    <!-- Bottom key legend inside card (separate physical keycaps, no ambiguous arrows) -->
+    <g transform="translate(28, 336)">
+      <rect x="0" y="0" width="74" height="32" rx="7" fill="#EEF2F0" stroke="rgba(15,50,54,0.20)"/>
+      <text x="37" y="21" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#162223">␣ 空白</text>
+      <text x="84" y="21" class="sans" font-size="13.5" fill="#4E6062">床</text>
+
+      <rect x="116" y="0" width="60" height="32" rx="7" fill="#EEF2F0" stroke="rgba(15,50,54,0.20)"/>
+      <text x="146" y="21" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#162223">⇥ Tab</text>
+      <text x="186" y="21" class="sans" font-size="13.5" fill="#4E6062">id + 空格</text>
+
+      <rect x="266" y="0" width="68" height="32" rx="7" fill="#215C52"/>
+      <text x="300" y="21" text-anchor="middle" class="sans" font-size="12.5" font-weight="600" fill="#FFFFFF">⇧ Shift</text>
+      <text x="344" y="21" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#4E6062">+</text>
+      <rect x="354" y="0" width="62" height="32" rx="7" fill="#215C52"/>
+      <text x="385" y="21" text-anchor="middle" class="sans" font-size="12.5" font-weight="600" fill="#FFFFFF">␣ 空白</text>
+      <text x="426" y="21" class="sans" font-size="13.5" font-weight="600" fill="#1B5249">互換</text>
+    </g>
+  </g>
+</svg>

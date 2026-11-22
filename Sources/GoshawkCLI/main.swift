@@ -58,6 +58,8 @@ struct ScriptStepRecord: Codable {
     let cangjieCandidates: [String]
     /// 反查開啟時面板的完整內容：讀音顯示、狀態、本頁各列、焦點與頁碼。
     let readingLookupPanel: ReadingLookupPanel?
+    /// 符號面板開啟時的完整內容：分頁、本頁各列、焦點與頁碼。
+    let symbolPanel: SymbolPanelContent?
     let documentText: String
     let pendingAutoSpace: Bool
     /// 行內程式片段語境：`none`、`inside`、`inside+zh`（黏中）或 `just-closed`，
@@ -71,6 +73,11 @@ struct ScriptStepRecord: Codable {
     let revertible: Bool
     /// 浮窗提示裡對調後的字詞。不可反悔時為 nil。
     let revertPreview: String?
+    /// 成對符號切換後浮窗選項列的內容：目前的種類與數字會不會直選。不是切換時為 nil。
+    let pairChoice: PairChoice?
+    /// 成對切換被擋下時的原因。沒有被擋下時為 nil，輸出裡就沒有這個欄位。
+    let pairSwitchNotice: PairSwitchNotice?
+    let chineseContinuation: String?
 }
 
 struct ScriptReport: Codable {
@@ -261,9 +268,9 @@ func snippetLabel(_ context: SnippetContext) -> String {
     }
 }
 
-func runScript(rawTokens: String, evidenceOut: String?) throws -> Int32 {
+func runScript(rawTokens: String, evidenceOut: String?, configuration: EngineConfiguration, context: String) throws -> Int32 {
     let tokens = rawTokens.split(whereSeparator: \.isWhitespace).map(String.init)
-    var engine = InputEngine()
+    var engine = InputEngine(configuration: configuration, initialDocumentText: context)
     var steps: [ScriptStepRecord] = []
 
     for (idx, token) in tokens.enumerated() {
@@ -285,13 +292,17 @@ func runScript(rawTokens: String, evidenceOut: String?) throws -> Int32 {
             cangjieRadicals: effect.overlay?.cangjieTrack?.radicals,
             cangjieCandidates: effect.overlay?.cangjieTrack?.candidates ?? [],
             readingLookupPanel: effect.readingLookupPanel,
+            symbolPanel: effect.symbolPanel,
             documentText: effect.documentText,
             pendingAutoSpace: effect.pendingAutoSpace,
             snippet: snippetLabel(engine.snippet),
             spaceCommits: effect.overlay?.spaceCommits.rawValue,
             inCodeSnippet: effect.overlay?.inCodeSnippet,
             revertible: effect.revertible,
-            revertPreview: effect.revertPreview
+            revertPreview: effect.revertPreview,
+            pairChoice: effect.pairChoice,
+            pairSwitchNotice: effect.pairSwitchNotice,
+            chineseContinuation: engine.chineseContinuation
         ))
     }
 
@@ -534,6 +545,18 @@ func runServe() -> Int32 {
 
 func main() -> Int32 {
     let args = Array(CommandLine.arguments.dropFirst())
+    if args.first == "--evaluate-continuation" {
+        guard args.count == 2 else {
+            fputs("Usage: GoshawkCLI --evaluate-continuation <cases.tsv>\n", stderr)
+            return 2
+        }
+        do {
+            return try runContinuationEvaluation(path: args[1])
+        } catch {
+            fputs("Continuation evaluation failed: \(error.localizedDescription)\n", stderr)
+            return 1
+        }
+    }
     if args.contains("--serve") {
         return runServe()
     }
@@ -556,6 +579,9 @@ func main() -> Int32 {
         }
     }
 
+    var configuration = EngineConfiguration()
+    var context = ""
+    var personalTerms: [String] = []
     var scriptArg: String?
     var evidenceOut: String?
     var readingArg: String?
@@ -585,6 +611,23 @@ func main() -> Int32 {
                 return 2
             }
             version = parsed
+        case "--context":
+            i += 1
+            guard i < args.count else {
+                fputs("Missing value for --context\n", stderr)
+                return 2
+            }
+            context = args[i]
+        case "--chinese-continuation":
+            configuration.chineseContinuationEnabled = true
+        case "--personal-term":
+            i += 1
+            guard i < args.count, PersonalTerms.isValid(args[i]) else {
+                fputs("--personal-term requires an ASCII term starting with a letter, followed by letters or digits\n", stderr)
+                return 2
+            }
+            personalTerms.append(args[i])
+            configuration.personalTermsEnabled = true
         case "--script":
             i += 1
             guard i < args.count else {
@@ -616,12 +659,13 @@ func main() -> Int32 {
     }
 
     guard let rawTokens = scriptArg else {
-        fputs("Usage: GoshawkCLI --doctor | --benchmark | --serve | --reading \"<keys>\" [--scheme dachen|pinyin] [--version v5|v3] | --script \"<tokens>\" [--evidence-out <path>]\n", stderr)
+        fputs("Usage: GoshawkCLI --doctor | --benchmark | --serve | --evaluate-continuation <cases.tsv> | --reading \"<keys>\" [--scheme dachen|pinyin] [--version v5|v3] | --script \"<tokens>\" [--context <text>] [--chinese-continuation] [--personal-term <word>] [--evidence-out <path>]\n", stderr)
         return 2
     }
 
     do {
-        return try runScript(rawTokens: rawTokens, evidenceOut: evidenceOut)
+        configuration.personalTerms = PersonalTerms(personalTerms)
+        return try runScript(rawTokens: rawTokens, evidenceOut: evidenceOut, configuration: configuration, context: context)
     } catch {
         fputs("Script execution failed: \(error)\n", stderr)
         return 1

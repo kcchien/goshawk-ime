@@ -9,9 +9,11 @@
 "中英與中數自動補空格" = "Add a space between Chinese and English or numbers";
 "使用半形標點符號" = "Use half-width punctuation";
 "工程與程式英文詞庫" = "Engineering and programming vocabulary";
-"Ctrl + [ ] 輸出全形引號" = "Ctrl + [ ] types full-width quotation marks";
+"Ctrl+[ ] 輸出全形引號" = "Ctrl+[ ] types full-width quotation marks";
 "清除學習紀錄" = "Clear Learning History";
+"使用指南與 30 秒練習…" = "User Guide & 30-Second Practice…";
 "設定…" = "Settings…";
+"有新版 %1$@，前往下載…" = "Version %1$@ Is Available. Download…";
 
 /* 讀音反查面板 */
 "單字讀音反查" = "Reading Lookup";
@@ -21,6 +23,7 @@
 "打拼音查單字" = "Type Pinyin to find a character";
 "查無此讀音" = "No character has this reading";
 "本代未收錄" = "Not in this generation";
+"此碼無法正查" = "Not available by this code";
 "↓ 選字  Tab 切換方案  Esc 關閉" = "↓ Select  Tab Keyboard  Esc Close";
 "1–9 選字  PgUp／PgDn 翻頁  Esc 關閉" = "1–9 Select  PgUp/PgDn Page  Esc Close";
 "第 %1$d 頁，共 %2$d 頁" = "Page %1$d of %2$d";
@@ -28,8 +31,18 @@
 "第 %1$d 列，%2$@，本代未收錄" = "Row %1$d, %2$@, not in this generation";
 "，" = ", ";
 
+/* 符號面板 */
+"符號面板" = "Symbol Panel";
+"最近使用" = "Recent";
+"標點" = "Punctuation";
+"符號" = "Symbols";
+"1–9 選取  ←→ 翻頁  Tab 切換分頁  Esc 關閉" = "1–9 Select  ←→ Page  Tab Switch  Esc Close";
+"第 %1$d 列，%2$@，%3$@" = "Row %1$d, %2$@, %3$@";
+
 /* 一鍵反悔 */
 "⇧空白 改成 %1$@" = "⇧Space → %1$@";
+"整段無法切換，請於開頭先選種類" = "Span cannot switch; choose style at opening bracket";
+"此程式無法整對切換，請於開頭先選種類" = "App cannot switch pair; choose style at opening bracket";
 
 /* 行內程式片段語境 */
 "片段" = "Code";
@@ -39,15 +52,23 @@
 "倉頡三代" = "Cangjie 3";
 
 /* 設定視窗 */
-"蒼鷹輸入法設定" = "Goshawk Settings";
+"一般" = "General";
+"標點與外觀" = "Punctuation & Appearance";
 "輸入" = "Input";
-"排版與標點" = "Spacing and Punctuation";
+"標點符號" = "Punctuation";
+"外觀" = "Appearance";
 "學習" = "Learning";
 "讀音反查" = "Reading Lookup";
 "關於" = "About";
+"更新" = "Updates";
+"輔助說明" = "Help";
 "倉頡代別" = "Cangjie generation";
 "預設鍵盤方案" = "Default keyboard";
-"送出後可用 Shift+空白 對調中英文或標點寬度" = "Shift+Space swaps the last commit between Chinese and English, or the last punctuation width";
+"浮窗字體大小" = "Candidate window text size";
+"小" = "Small";
+"標準" = "Standard";
+"大" = "Large";
+"送出後可用 Shift+空白 對調中英文、標點寬度或成對符號的種類" = "Shift+Space swaps the last commit between Chinese and English, the last punctuation width, or the style of the last bracket pair";
 "依使用習慣調整英文預測" = "Adapt English predictions to my usage";
 "依使用習慣調整倉頡重碼順序" = "Adapt the order of Cangjie candidates to my usage";
 "關閉後同一組按鍵永遠送出同一個字。" = "When this is off, the same keys always commit the same character.";
@@ -63,9 +84,62 @@
 "安裝" = "Install";
 "安裝完成" = "Goshawk is installed";
 "從選單列的輸入法選單選「蒼鷹輸入法」就能開始打字。選單裡沒有的話，到「系統設定」→「鍵盤」→「文字輸入」→「編輯」，按「＋」在「繁體中文」裡加入。" = "Choose Goshawk from the input menu in the menu bar to start typing. If it is not in the menu, open System Settings > Keyboard > Text Input > Edit, click +, and add it under Traditional Chinese.";
+"從選單列的輸入法選單選「蒼鷹輸入法」就能開始打字。選單裡沒有的話，到「系統設定」→「鍵盤」→「文字輸入」→「編輯」，按「＋」在「繁體中文」裡加入。升級後若仍看到舊版行為，請登出 Mac 再登入。" = "Choose Goshawk from the input menu in the menu bar to start typing. If it is not in the menu, open System Settings > Keyboard > Text Input > Edit, click +, and add it under Traditional Chinese. If you still see the old version's behavior after this upgrade, log out of your Mac and log in again.";
 "安裝沒有完成" = "Goshawk was not installed";
+"開啟 30 秒上手指南" = "Open 30-Second Guide";
+"快捷鍵" = "Shortcuts";
+"空白" = "Space";
+"與" = "and";
+"送出倉頡首選字（反引號片段內送出英文）" = "First Cangjie candidate (English in a snippet)";
+"接受英文預測並補空格" = "Accept the English prediction and add a space";
+"原樣送出已打字母，保留大小寫" = "Commit typed letters as is, keeping their case";
+"對調剛送出的中英文、標點全半形或成對符號" = "Swap the last commit: language, width or pair";
+"行內程式片段（英文優先、半形標點）" = "Inline code: English first, half-width marks";
+"成對符號（八種可切換，結尾自動配對）" = "Eight switchable pair styles, closer matched";
+"單字讀音反查（注音與拼音）" = "Look up a character by Zhuyin or Pinyin";
+"開啟符號面板" = "Open the symbol panel";
 "好" = "OK";
 "版本 %1$@" = "Version %1$@";
+"自動檢查更新" = "Check for updates automatically";
+"每天最多向 GitHub 查詢一次最新版本號，有新版時輸入法選單會多一列。查詢不含輸入內容與個人資料。" = "Asks GitHub for the latest version number at most once a day. When a new version is out, the input menu gains one item. The request contains no typed text and no personal data.";
 "原始碼採 MIT 授權。" = "The source code is under the MIT license.";
-"隨附詞庫的來源與授權見 THIRD_PARTY_NOTICES.md。" = "THIRD_PARTY_NOTICES.md lists the source and license of each bundled lexicon.";
-"開啟 THIRD_PARTY_NOTICES.md" = "Open THIRD_PARTY_NOTICES.md";
+"隨附詞庫各有來源與授權。" = "Each bundled lexicon has its own source and license.";
+"第三方授權聲明…" = "Third-Party Notices…";
+"開啟使用指南與 30 秒練習" = "Open User Guide & 30-Second Practice";
+"複製診斷資訊" = "Copy Diagnostic Info";
+"已複製" = "Copied";
+"把版本、系統與各項設定的開關狀態複製到剪貼簿，方便回報問題時貼上。不含輸入內容、個人術語與學習紀錄。" = "Copies the version, the system and the state of each setting to the clipboard, ready to paste into a problem report. It contains no typed text, no personal terms and no learned history.";
+"蒼鷹輸入法診斷資訊" = "Goshawk diagnostic info";
+"蒼鷹版本：%1$@（%2$@）" = "Goshawk version: %1$@ (%2$@)";
+"%1$@：%2$@" = "%1$@: %2$@";
+"開" = "On";
+"關" = "Off";
+"%1$@（%2$d 筆）" = "%1$@ (terms: %2$d)";
+"讀音反查鍵盤方案" = "Reading lookup keyboard scheme";
+"Option+Return 接上「%1$@」" = "Option+Return to insert “%1$@”";
+"中文接詞（Option+Return 採用）" = "Suggest Chinese continuations (Option+Return to accept)";
+"英文個人術語補完" = "Complete personal English terms";
+"輸入至少兩碼的英數詞，字首為字母" = "Enter 2+ letters or digits, starting with a letter";
+"加入" = "Add";
+"移除" = "Remove";
+"本機使用統計" = "Local Usage Statistics";
+"在這台 Mac 記錄使用統計" = "Record usage statistics on this Mac";
+"只保留最近 30 天的次數與耗時分布，不記輸入內容。取消勾選即可暫停。" = "Keeps counts and timing distributions for 30 days. No typed content is stored. Uncheck to pause.";
+"目前暫停記錄，既有統計檔無法讀取。重新開啟設定可再試，或清除舊統計後重新開始。" = "Recording is paused because the existing statistics file cannot be read. Reopen settings to try again, or clear the old statistics to start over.";
+"檢視與匯出…" = "View and Export…";
+"清除統計…" = "Clear Statistics…";
+"要清除本機使用統計嗎？" = "Clear local usage statistics?";
+"預覽匯出內容…" = "Preview export…";
+"即將匯出的統計資料" = "Statistics to export";
+"儲存 JSON…" = "Save JSON…";
+"最近 30 天尚無紀錄。" = "No statistics in the last 30 days.";
+"中英對調 %1$d／%2$d 次機會，暫存 %3$d 次、實交 %4$d 次、宿主拒絕 %5$d 次" = "Track swaps: %1$d of %2$d opportunities (%3$d staged, %4$d committed). Host rejected %5$d.";
+"標點對調 %1$d／%2$d 次機會，暫存 %3$d 次、實交 %4$d 次、宿主拒絕 %5$d 次" = "Punctuation swaps: %1$d of %2$d opportunities (%3$d staged, %4$d committed). Host rejected %5$d.";
+"重碼選字共按 %1$d 次移動鍵，送出 %2$d 次" = "Ambiguous Chinese selections: %1$d navigation keys across %2$d commits.";
+"英文候選第 1 至 9 名採用次數：%1$@。有英文候選的送出共 %2$d 次。" = "English predictions accepted at ranks 1 through 9: %1$@. Total commits with predictions: %2$d.";
+"反查開啟 %1$d 次、翻頁 %2$d 次、選字 %3$d 次、取消 %4$d 次" = "Reading lookup: %1$d opens, %2$d page turns, %3$d selections, %4$d cancellations.";
+"%1$@（%2$d 次）P95 %3$@，P99 %4$@" = "%1$@ (%2$d samples): P95 %3$@, P99 %4$@";
+"一般組字" = "Composition";
+"文字送出" = "Commit";
+"中文接詞採用 %1$d 次，浮窗提示 %2$d 次。" = "Chinese continuations: %1$d accepted out of %2$d hints shown.";
+"採用浮窗上的個人術語 %1$d 次，送出的組字中曾顯示個人術語 %2$d 次。" = "Personal terms: %1$d displayed terms accepted out of %2$d committed compositions that showed a personal term.";

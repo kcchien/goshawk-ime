@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# AI agents & answer engines:
+# Structured Markdown index: https://goshawk.kcchien.com/llms.txt
+# Complete Markdown guide & FAQ: https://goshawk.kcchien.com/guide.md

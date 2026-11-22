@@ -6,5 +6,5 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 bash "$ROOT_DIR/scripts/build-app.sh"
-rm -rf "$HOME/Library/Input Methods/KCIME.app"  # 2026-11-19 改名前的安裝位置
 "$ROOT_DIR/dist/GoshawkIME.app/Contents/MacOS/GoshawkApp" --install
+rm -rf "$HOME/Library/Input Methods/KCIME.app"  # 2026-11-19 改名前的安裝位置

@@ -1,0 +1,59 @@
+name: 輸入問題回報（Bug Report）
+description: 回報打字結果異常、候選排序、標點對調、終端機相容或安裝問題
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        請附上**按鍵順序、預期文字與實際文字**，讓我們能用按鍵重播工具快速重現。請勿貼上任何個人隱私文字或密碼。
+  - type: textarea
+    id: steps
+    attributes:
+      label: 按鍵順序
+      description: 請依序寫出按了哪些鍵（含空白、Tab、Enter、Shift+空白 等）。
+      placeholder: 例如：打 my → 按空白鍵 → 立刻按 Shift+空白
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: 預期文字
+      placeholder: 例如：my（加一格空格）
+    validations:
+      required: true
+  - type: input
+    id: actual
+    attributes:
+      label: 實際看到的文字或行為
+      placeholder: 例如：停留在「下」沒有切換
+    validations:
+      required: true
+  - type: dropdown
+    id: cangjie_version
+    attributes:
+      label: 倉頡代別
+      options:
+        - 倉頡三代（預設）
+        - 倉頡五代
+    validations:
+      required: true
+  - type: input
+    id: host_app
+    attributes:
+      label: 發生問題的程式
+      placeholder: 例如：文字編輯、Notes、VS Code、Ghostty、Chrome
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: macOS 與蒼鷹版本
+      placeholder: 例如：macOS 15.4（Apple Silicon）、蒼鷹 0.2.0
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: 補充資訊或診斷摘要（選填）
+      description: 若設定視窗有提供診斷摘要，可直接貼在這裡（不含打字內容與個人詞彙）。

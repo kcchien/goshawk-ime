@@ -77,6 +77,65 @@ UNIHAN_MEMBER = "Unihan_DictionaryLikeData.txt"
 # the second is preferred for zh-Hant (TW)」，所以取最後一個值就是台灣慣用的那個讀音。
 UNIHAN_READINGS_MEMBER = "Unihan_Readings.txt"
 
+# 下面三張表的每一筆都對照過教育部《重編國語辭典修訂本》的單字與註解裡的詞語注音
+# （2026-11-22 查詢）。註解裡的「辭典」指這本，括號裡的國字數字是辭典的讀音序號。
+
+# kMandarin 指的音節不是台灣慣用音節的常用字，在這裡改指台灣慣用的那個去調拼音音節。
+# 只收改了之後該字在台灣讀音那一列確實往前的字：兩個音節在台灣都常用的字（例如
+# 「液」、「熟」）不收，改了只會把另一個讀音擠出第一頁。
+TAIWAN_PRIMARY_SYLLABLE_OVERRIDES: dict[str, str] = {
+    "圾": "se",  # 辭典（二）ㄙㄜˋ，垃圾 ㄌㄜˋ ㄙㄜˋ；（一）ㄐㄧˊ 是文言義，kMandarin 是 jī
+    "攜": "xi",  # 辭典（一）讀音 ㄒㄧ，攜帶 ㄒㄧ ㄉㄞˋ，kMandarin 是 xié
+    "柵": "zha",  # 辭典（一）ㄓㄚˋ，柵欄 ㄓㄚˋ ㄌㄢˊ，kMandarin 是 shān
+    "暫": "zhan",  # 辭典（一）語音 ㄓㄢˋ，暫時 ㄓㄢˋ ㄕˊ，kMandarin 是 zàn
+    "艘": "sao",  # 辭典（一）ㄙㄠ，kMandarin 是 sōu
+    "劊": "kuai",  # 辭典（一）ㄎㄨㄞˋ，劊子手 ㄎㄨㄞˋ ˙ㄗ ㄕㄡˇ，kMandarin 是 guì
+    "擷": "jie",  # 辭典（一）ㄐㄧㄝˊ，擷取 ㄐㄧㄝˊ ㄑㄩˇ，kMandarin 是 xié
+    "埔": "pu",  # 辭典（一）ㄆㄨˇ，埔里 ㄆㄨˇ ㄌㄧˇ，kMandarin 是 bù
+    "泊": "bo",  # 辭典（一）ㄅㄛˊ，停泊、湖泊 ㄅㄛˊ，kMandarin 是 pō
+    # 辭典（一）讀音 ㄗˇ、（二）語音 ㄐㄧㄝˇ，姊姊、姊妹兩個都收，口語用語音。kMandarin 是 zǐ。
+    # 不改成兩個都算主要讀音：那樣「姊」會把「姿」擠出 ㄗ 不指定聲調的第一頁，
+    # 而照現在的做法它仍在 ㄗˇ 的第一頁（第 8 名）。
+    "姊": "jie",
+}
+
+# 台灣讀音與 kMandarin 同音節、只差聲調的常用字，值是台灣讀音（去調拼音、聲調 1 至 5）。
+# 列在這裡的讀音與 kMandarin 那個讀音都算主要讀音，都不往後排。
+# 不能改成「同音節一律不往後排」，也不能用 Unihan 的字典讀音欄自動判斷：全字庫另收的
+# 又讀與古讀同樣是同音節不同聲調（先 ㄒㄧㄢˋ、使 ㄕˋ、刻 ㄎㄜ、雨 ㄩˋ），放行就會把那些
+# 常用字推上第一頁，擠掉真正讀那個音的字。所以只收逐字確認過的。
+# 辭典只收 kMandarin 那個讀音、或把它列為又音與讀音的字不收：「誼」（一）ㄧˋ、
+# 「俄」只有 ㄜˊ、「誣」（一）語音 ㄨ，都與 kMandarin 相同，不必覆寫。
+TAIWAN_TONE_VARIANT_READINGS: dict[str, tuple[str, int]] = {
+    "期": ("qi", 2),  # 辭典（一）ㄑㄧˊ，星期 ㄒㄧㄥ ㄑㄧˊ，kMandarin 是 qī
+    "質": ("zhi", 2),  # 辭典（一）ㄓˊ，品質 ㄆㄧㄣˇ ㄓˊ，kMandarin 是 zhì
+    "微": ("wei", 2),  # 辭典（一）ㄨㄟˊ，kMandarin 是 wēi
+    "究": ("jiu", 4),  # 辭典（一）ㄐㄧㄡˋ，研究 ㄧㄢˊ ㄐㄧㄡˋ，kMandarin 是 jiū
+    "擁": ("yong", 3),  # 辭典（一）ㄩㄥˇ，擁有 ㄩㄥˇ ㄧㄡˇ，kMandarin 是 yōng
+    "儲": ("chu", 2),  # 辭典（一）ㄔㄨˊ，儲存 ㄔㄨˊ ㄘㄨㄣˊ，kMandarin 是 chǔ
+    # 辭典（一）ㄕㄨˇ 用在公署、署長，（二）ㄕㄨˋ 用在簽署、署名，kMandarin 是 shǔ
+    "署": ("shu", 4),
+    "檔": ("dang", 3),  # 辭典（一）ㄉㄤˇ，檔案 ㄉㄤˇ ㄢˋ，kMandarin 是 dàng
+    "辱": ("ru", 4),  # 辭典（一）ㄖㄨˋ，侮辱 ㄨˇ ㄖㄨˋ，kMandarin 是 rǔ
+    "嵌": ("qian", 1),  # 辭典（一）ㄑㄧㄢ，鑲嵌 ㄒㄧㄤ ㄑㄧㄢ，kMandarin 是 qiàn
+    "凸": ("tu", 2),  # 辭典（一）ㄊㄨˊ，凸出 ㄊㄨˊ ㄔㄨ，kMandarin 是 tū
+    "濤": ("tao", 2),  # 辭典（一）ㄊㄠˊ，波濤 ㄅㄛ ㄊㄠˊ，kMandarin 是 tāo
+    "眶": ("kuang", 1),  # 辭典只收 ㄎㄨㄤ，眼眶 ㄧㄢˇ ㄎㄨㄤ，kMandarin 是 kuàng
+    "雌": ("ci", 1),  # 辭典（一）ㄘ，雌雄 ㄘ ㄒㄩㄥˊ，kMandarin 是 cí
+    "獺": ("ta", 4),  # 辭典（一）ㄊㄚˋ，水獺 ㄕㄨㄟˇ ㄊㄚˋ，kMandarin 是 tǎ
+    "鈾": ("you", 4),  # 辭典（一）ㄧㄡˋ，kMandarin 是 yóu
+    "為": ("wei", 2),  # 辭典（一）ㄨㄟˊ、（二）ㄨㄟˋ，kMandarin 是 wèi
+}
+
+# 台灣常用、而且與主要音節不同音節的第二讀音，值是那個讀音（去調拼音、聲調 1 至 5）。
+# 列在這裡的讀音與主要讀音都不往後排，其餘不同音節的讀音照樣往後排。
+# 只收放進來之後該字在那一列確實往前、而且沒有把同列更常用的字擠出第一頁的字。
+TAIWAN_SECOND_READINGS: dict[str, tuple[str, int]] = {
+    "樂": ("yue", 4),  # 辭典（一）ㄩㄝˋ、（二）ㄌㄜˋ，音樂 ㄩㄝˋ，kMandarin 是 lè
+    "彈": ("tan", 2),  # 辭典（一）ㄉㄢˋ、（二）ㄊㄢˊ，彈琴 ㄊㄢˊ，kMandarin 是 dàn
+    "和": ("han", 4),  # 辭典（五）ㄏㄢˋ 是（一）ㄏㄜˊ 的語音，kMandarin 是 hé
+}
+
 # 帶調漢語拼音的調號（NFD 分解後的結合字元）。沒有調號的音節是輕聲。
 PINYIN_TONE_MARKS = {"̄": 1, "́": 2, "̌": 3, "̀": 4}
 
@@ -301,8 +360,8 @@ def parse_cns_phonetic_table(
     cangjie_chars: set[str],
     commonness: dict[str, float],
     mandarin: dict[str, tuple[str, int]],
-) -> tuple[dict[tuple[str, int], list[str]], int]:
-    """得到（去調注音、聲調）到候選字的對照。
+) -> tuple[dict[tuple[str, int], list[str]], dict[str, list[str]], int]:
+    """得到（去調注音、聲調）到候選字的對照，以及各音節不指定聲調時的候選順序。
 
     只收能對應到 Unicode、且出現在倉頡碼表裡的字：查得到讀音卻沒有任何倉頡碼的字，
     這個輸入法打不出來，列進面板只會占位置。一字多音全收。
@@ -347,11 +406,50 @@ def parse_cns_phonetic_table(
     for key in table:
         table[key].sort(key=reading_sort_key(commonness, demoted, key))
 
-    return table, len(skipped_without_cangjie)
+    toneless = merge_tones(table, commonness, demoted)
+    return table, toneless, len(skipped_without_cangjie)
+
+
+def merge_tones(
+    table: dict[tuple[str, int], list[str]],
+    commonness: dict[str, float],
+    demoted: set[tuple[str, tuple[str, int]]],
+) -> dict[str, list[str]]:
+    """各音節不指定聲調時的候選順序：跨聲調依字去重後，用同一套排序鍵重排。
+
+    只打聲母韻母的人多半是記不得聲調，所以要讓各聲調最常用的字一起排在前面。照聲調
+    把各列接起來的話，一聲的罕用字會全部排在二、三、四聲的常用字之前。
+
+    一個字在這個音節的每個聲調都是罕用讀音，才算罕用讀音：「期」的 ㄑㄧ 往後排、ㄑㄧˊ
+    不往後排，不指定聲調時它就不往後排。只有一個聲調的音節不列，那一列本身就是答案。
+    """
+    tones_of: dict[str, list[int]] = defaultdict(list)
+    for bopomofo, tone in table:
+        tones_of[bopomofo].append(tone)
+
+    base = candidate_sort_key(commonness)
+    toneless: dict[str, list[str]] = {}
+    for bopomofo, tones in tones_of.items():
+        if len(tones) < 2:
+            continue
+        keys = [(bopomofo, tone) for tone in tones]
+
+        def sort_key(word: str) -> tuple[int, int, float, int]:
+            tier, score, code_point = base(word)
+            rare_in_every_tone = all(
+                (word, key) in demoted for key in keys if word in table[key]
+            )
+            return (tier, int(rare_in_every_tone), score, code_point)
+
+        words = {word for key in keys for word in table[key]}
+        toneless[bopomofo] = sorted(words, key=sort_key)
+    return toneless
 
 
 def write_readings_tsv(
-    table: dict[tuple[str, int], list[str]], out_path: pathlib.Path
+    table: dict[tuple[str, int], list[str]],
+    toneless: dict[str, list[str]],
+    out_path: pathlib.Path,
 ) -> tuple[int, int, int]:
     """寫出讀音索引，並自我檢查注音轉拼音為全覆蓋且一對一。"""
     syllables = sorted({bopomofo for bopomofo, _ in table})
@@ -367,15 +465,23 @@ def write_readings_tsv(
         f"# 來源 全字庫（CNS11643）注音屬性資料 {CNS_PHONETIC_MEMBER}，版本 {CNS_VERSION}",
         "# 提供機關 數位發展部，政府資料開放授權條款第 1 版，顯名聲明見 THIRD_PARTY_NOTICES.md",
         "# 欄位：去調注音、去調漢語拼音（ü 寫 ü）、聲調 1-5（5 為輕聲）、候選字",
+        "# 聲調 0 的列是不指定聲調時的候選順序，字就是同音節各聲調列的聯集；"
+        "只有一個聲調的音節不列。",
         f"# 候選依 Big5 分區、是否為該字的罕用讀音（Unihan {UNIHAN_VERSION} kMandarin）、"
         "常用度分數、Big5 碼位排序。",
         "# 候選字直接相連，每字一個字元。",
         "# 列序固定為注音碼序再聲調，重跑可得位元組相同的結果。",
     ]
+    for bopomofo, merged in toneless.items():
+        union = {word for key, words in table.items() if key[0] == bopomofo for word in words}
+        if len(merged) != len(union) or set(merged) != union:
+            raise SystemExit(f"{bopomofo} 不指定聲調的候選不是各聲調候選的無重複聯集。")
+    rows = dict(table) | {(bopomofo, 0): merged for bopomofo, merged in toneless.items()}
+
     chars: set[str] = set()
-    for key in sorted(table, key=lambda k: (k[0], k[1])):
+    for key in sorted(rows, key=lambda k: (k[0], k[1])):
         bopomofo, tone = key
-        candidates = table[key]
+        candidates = rows[key]
         # 候選字直接相連，所以每個值必須是單一且已正規化的字元。
         for word in candidates:
             if len(word) != 1 or normalize_han_char(word) != word:
@@ -529,7 +635,8 @@ def parse_unihan_mandarin(zip_path: pathlib.Path) -> dict[str, tuple[str, int]]:
 
 
 def find_demoted_readings(
-    table: dict[tuple[str, int], list[str]], mandarin: dict[str, tuple[str, int]]
+    table: dict[tuple[str, int], list[str]],
+    mandarin: dict[str, tuple[str, int]],
 ) -> set[tuple[str, tuple[str, int]]]:
     """標出「這個讀音不是這個字的主要讀音」的（字、讀音）配對。
 
@@ -538,14 +645,31 @@ def find_demoted_readings(
     字的其餘讀音往後排。全字庫的注音屬性資料不能當依據：它同一個字的多個讀音是照注音
     符號順序排的（15,528 個多音字碼位逐一核對全部符合），沒有主次資訊。
 
-    兩岸讀音常只差聲調（夕 xī 對 ㄒㄧˋ、拙 zhuō 對 ㄓㄨㄛˊ），所以聲調對不上時再用去調
-    音節比一次，而且該音節在這個字的讀音裡唯一才算。一個字的讀音全都對不上時不標任何
-    配對：寧可讓它不參與這一層排序，也不要把它每一個讀音都當罕用讀音壓下去。
+    kMandarin 大多只給大陸慣用的那個讀音，而兩岸讀音常只差聲調（期 qī 對 ㄑㄧˊ、
+    質 zhì 對 ㄓˊ、微 wēi 對 ㄨㄟˊ），所以分兩層判斷：
+
+    1. 音節與主要音節不同的讀音一律往後排（紅 在 ㄍㄨㄥ），只有 TAIWAN_SECOND_READINGS
+       列出的台灣第二讀音例外（樂 的 ㄩㄝˋ）。主要音節取
+       TAIWAN_PRIMARY_SYLLABLE_OVERRIDES，沒有才取 kMandarin 的音節。
+    2. 音節相同、只差聲調的讀音照樣往後排（雨 yǔ 的 ㄩˋ、共 gòng 的 ㄍㄨㄥ、
+       先 xiān 的 ㄒㄧㄢˋ），只有 TAIWAN_TONE_VARIANT_READINGS 列出的台灣讀音例外。
+       這一層需要 kMandarin 的帶調讀音本身也在全字庫裡，否則沒有可以對照的主要讀音。
+
+    主要音節對不上這個字的任何讀音時不標任何配對：寧可讓它不參與這一層排序，也不要把
+    它每一個讀音都當罕用讀音壓下去。
     """
     readings_of: dict[str, list[tuple[str, int]]] = defaultdict(list)
     for key, words in table.items():
         for word in words:
             readings_of[word].append(key)
+
+    for word, syllable in TAIWAN_PRIMARY_SYLLABLE_OVERRIDES.items():
+        spelled_syllables = {bopomofo_to_pinyin(key[0]) for key in readings_of.get(word, [])}
+        if syllable not in spelled_syllables:
+            raise SystemExit(
+                f"TAIWAN_PRIMARY_SYLLABLE_OVERRIDES 的 {word} 指定音節 {syllable}，"
+                f"但全字庫裡這個字的音節是 {sorted(spelled_syllables)}，請修正覆寫表。"
+            )
 
     demoted: set[tuple[str, tuple[str, int]]] = set()
     for word, keys in readings_of.items():
@@ -553,16 +677,57 @@ def find_demoted_readings(
         if len(keys) < 2:
             continue
         wanted = mandarin.get(word)
-        if wanted is None:
-            continue
+        primary_syllable = TAIWAN_PRIMARY_SYLLABLE_OVERRIDES.get(word) or (
+            wanted[0] if wanted is not None else None
+        )
         spelled = {key: (bopomofo_to_pinyin(key[0]), key[1]) for key in keys}
-        primary = next((key for key in keys if spelled[key] == wanted), None)
-        if primary is None:
-            same_syllable = [key for key in keys if spelled[key][0] == wanted[0]]
-            if len(same_syllable) != 1:
-                continue
-            primary = same_syllable[0]
-        demoted.update((word, key) for key in keys if key != primary)
+        if primary_syllable not in {syllable for syllable, _ in spelled.values()}:
+            continue
+        # 只差聲調的那一層：主要讀音要正好是 kMandarin 那個帶調讀音，而且全字庫有收。
+        has_exact_primary = (
+            wanted is not None
+            and wanted[0] == primary_syllable
+            and wanted in spelled.values()
+        )
+        taiwan_variant = TAIWAN_TONE_VARIANT_READINGS.get(word)
+        if taiwan_variant is not None and (
+            not has_exact_primary
+            or taiwan_variant == wanted
+            or taiwan_variant[0] != primary_syllable
+            or taiwan_variant not in spelled.values()
+        ):
+            raise SystemExit(
+                f"TAIWAN_TONE_VARIANT_READINGS 的 {word} 指定讀音 {taiwan_variant}，"
+                f"但它不是與 kMandarin（{wanted}）同音節不同聲調、而且全字庫有收的讀音"
+                f"（全字庫的讀音是 {sorted(spelled.values())}），請修正覆寫表。"
+            )
+        second = TAIWAN_SECOND_READINGS.get(word)
+        if second is not None and (
+            second[0] == primary_syllable or second not in spelled.values()
+        ):
+            raise SystemExit(
+                f"TAIWAN_SECOND_READINGS 的 {word} 指定讀音 {second}，但它不是與主要音節"
+                f"（{primary_syllable}）不同音節、而且全字庫有收的讀音"
+                f"（全字庫的讀音是 {sorted(spelled.values())}），請修正覆寫表。"
+            )
+        for key in keys:
+            if spelled[key][0] != primary_syllable:
+                if spelled[key] != second:
+                    demoted.add((word, key))
+            elif has_exact_primary and spelled[key] not in (wanted, taiwan_variant):
+                demoted.add((word, key))
+
+    polyphonic = {word for word, keys in readings_of.items() if len(keys) >= 2}
+    for name, overrides in (
+        ("TAIWAN_TONE_VARIANT_READINGS", TAIWAN_TONE_VARIANT_READINGS),
+        ("TAIWAN_SECOND_READINGS", TAIWAN_SECOND_READINGS),
+    ):
+        unused = set(overrides) - polyphonic
+        if unused:
+            raise SystemExit(
+                f"{name} 的 {'、'.join(sorted(unused))} "
+                "在讀音索引裡不是多音字，覆寫沒有作用，請修正覆寫表。"
+            )
     return demoted
 
 
@@ -838,7 +1003,7 @@ def main() -> None:
         # 用原生碼而不是正查表：被英文詞保護規則擋掉的碼，它的字仍該留在讀音索引，
         # 反查面板查得到也顯示拆碼。
         cangjie_chars = set(native5) | set(native3)
-        readings, readings_without_cangjie = parse_cns_phonetic_table(
+        readings, toneless_readings, readings_without_cangjie = parse_cns_phonetic_table(
             cns_files["Properties.zip"],
             cns_files["MapingTables.zip"],
             cangjie_chars,
@@ -846,7 +1011,7 @@ def main() -> None:
             mandarin,
         )
         syllable_count, row_count, reading_chars = write_readings_tsv(
-            readings, RESOURCES_DIR / "readings.tsv"
+            readings, toneless_readings, RESOURCES_DIR / "readings.tsv"
         )
         char_set = {word for words in readings.values() for word in words}
         native_rows, native_missing = write_native_codes_tsv(
@@ -866,7 +1031,7 @@ def main() -> None:
         print(f"Built english_freq.tsv: {len(english_words)} words")
         print(
             f"Built readings.tsv: {syllable_count} syllables, "
-            f"{row_count} toned rows, {reading_chars} chars "
+            f"{row_count} toned rows, {len(toneless_readings)} toneless rows, {reading_chars} chars "
             f"({readings_without_cangjie} characters with a reading but no Cangjie code were dropped)"
         )
         print(

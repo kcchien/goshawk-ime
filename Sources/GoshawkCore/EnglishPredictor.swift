@@ -71,7 +71,8 @@ public struct EnglishPredictor: Sendable {
         for prefix: String,
         limit: Int = 5,
         includeDeveloperTerms: Bool = true,
-        usage: UsageHistory = UsageHistory()
+        usage: UsageHistory = UsageHistory(),
+        personalTerms: PersonalTerms = .empty
     ) -> [String] {
         guard !prefix.isEmpty, limit > 0 else {
             return []
@@ -91,6 +92,16 @@ public struct EnglishPredictor: Sendable {
             seenLowercased.insert(loweredPrefix)
             if results.count >= limit {
                 return results
+            }
+        }
+
+        // 個人術語保留作者指定的大小寫。至少打到兩碼才進入補完，首碼仍沿用原來的詞頻順序。
+        if !personalTerms.words.isEmpty, prefix.count >= 2 {
+            // 完整的個人詞也要排在自身的延伸詞前。
+            let matches = personalTerms.words.lazy.filter { $0.lowercased().hasPrefix(loweredPrefix) }
+            for word in matches where seenLowercased.insert(word.lowercased()).inserted {
+                results.append(word)
+                if results.count >= limit { return results }
             }
         }
 

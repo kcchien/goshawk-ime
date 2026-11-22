@@ -6,6 +6,11 @@ if CommandLine.arguments.contains("--self-test") {
     let code = MainActor.assumeIsolated { runAppSelfTest() }
     exit(code)
 }
+if let flag = CommandLine.arguments.firstIndex(of: "--settings-shots"),
+   CommandLine.arguments.indices.contains(flag + 1) {
+    let directory = URL(fileURLWithPath: CommandLine.arguments[flag + 1])
+    exit(MainActor.assumeIsolated { renderSettingsScreenshots(to: directory) })
+}
 if CommandLine.arguments.contains("--install") {
     exit(MainActor.assumeIsolated {
         Installer.runCommandLine(Installer.install, done: "已安裝並啟用蒼鷹輸入法：\(Installer.installedURL.path)")
@@ -15,6 +20,9 @@ if CommandLine.arguments.contains("--uninstall") {
     exit(MainActor.assumeIsolated {
         Installer.runCommandLine(Installer.uninstall, done: "已移除蒼鷹輸入法。")
     })
+}
+if CommandLine.arguments.contains("--check-update") {
+    exit(UpdateChecker.runCommandLine())
 }
 if MainActor.assumeIsolated({ Installer.isLaunchedForInstall }) {
     MainActor.assumeIsolated { Installer.runInteractive() }

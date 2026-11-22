@@ -1,0 +1,179 @@
+# 符號面板的符號表。本專案自行編列，名稱採教育部《重訂標點符號手冊》與通用稱呼。
+# 「@」開頭的列是分組：中文組名、英文組名、所屬分頁（punctuation 是「標點」分頁，symbols 是「符號」分頁）。
+# 其餘每列是：符號、中文名稱、英文名稱、是否列入初始的最近使用（* 表示是）。
+# 「標點」分頁依《重訂標點符號手冊》的十五種標點排列，每種列出全形與半形的寫法。
+# 兩個分頁各自照檔案順序顯示。同一個符號只能出現一次。
+@句號	Period	punctuation
+。	句號	Ideographic full stop
+．	全形句點	Fullwidth full stop
+.	半形句點	Full stop
+@逗號	Comma	punctuation
+，	逗號	Fullwidth comma
+,	半形逗號	Comma
+@頓號	Enumeration comma	punctuation
+、	頓號	Ideographic comma
+@分號	Semicolon	punctuation
+；	分號	Fullwidth semicolon
+;	半形分號	Semicolon
+@冒號	Colon	punctuation
+：	冒號	Fullwidth colon
+:	半形冒號	Colon
+@引號	Quotation marks	punctuation
+「	左單引號	Left corner bracket
+」	右單引號	Right corner bracket
+『	左雙引號	Left white corner bracket
+』	右雙引號	Right white corner bracket
+“	左彎雙引號	Left double quotation mark
+”	右彎雙引號	Right double quotation mark
+‘	左彎單引號	Left single quotation mark
+’	右彎單引號	Right single quotation mark
+"	半形雙引號	Quotation mark
+'	半形單引號	Apostrophe
+@夾注號	Parentheses	punctuation
+（	左括號	Fullwidth left parenthesis
+）	右括號	Fullwidth right parenthesis
+(	半形左括號	Left parenthesis
+)	半形右括號	Right parenthesis
+@問號	Question mark	punctuation
+？	問號	Fullwidth question mark
+?	半形問號	Question mark
+@驚嘆號	Exclamation mark	punctuation
+！	驚嘆號	Fullwidth exclamation mark
+!	半形驚嘆號	Exclamation mark
+@破折號	Dash	punctuation
+——	破折號	Two-em dash	*
+@刪節號	Ellipsis	punctuation
+……	刪節號	Six-dot ellipsis	*
+@書名號	Title marks	punctuation
+《	左書名號	Left double angle bracket
+》	右書名號	Right double angle bracket
+〈	左篇名號	Left angle bracket
+〉	右篇名號	Right angle bracket
+﹏	書名號甲式	Wavy low line
+@專名號	Proper name mark	punctuation
+＿	專名號	Fullwidth low line
+@間隔號	Interpunct	punctuation
+‧	間隔號	Hyphenation point	*
+·	半形間隔號	Middle dot
+@連接號	Connecting marks	punctuation
+—	連接號	Em dash
+～	連接號乙式	Fullwidth tilde
+@其他括號	Other brackets	symbols
+【	左方頭括號	Left black lenticular bracket
+】	右方頭括號	Right black lenticular bracket
+〔	左六角括號	Left tortoise shell bracket	*
+〕	右六角括號	Right tortoise shell bracket	*
+［	全形左方括號	Fullwidth left square bracket
+］	全形右方括號	Fullwidth right square bracket
+｛	全形左大括號	Fullwidth left curly bracket
+｝	全形右大括號	Fullwidth right curly bracket
+〖	左空心方頭括號	Left white lenticular bracket
+〗	右空心方頭括號	Right white lenticular bracket
+@其他標點	Other punctuation	symbols
+／	全形斜線	Fullwidth slash
+＼	全形反斜線	Fullwidth backslash
+｜	全形直線	Fullwidth vertical bar
+〃	同上符號	Ditto mark
+々	疊字符號	Iteration mark
+　	全形空格	Ideographic space
+@記號	Marks	symbols
+※	參考符號	Reference mark	*
+○	圓圈	White circle
+●	實心圓	Black circle
+◎	雙圓	Bullseye
+△	三角形	White triangle
+▲	實心三角形	Black triangle
+▽	倒三角形	White down-pointing triangle
+▼	實心倒三角形	Black down-pointing triangle
+□	方塊	White square
+■	實心方塊	Black square
+◇	菱形	White diamond
+◆	實心菱形	Black diamond
+☆	空心星	White star
+★	實心星	Black star
+✓	打勾	Check mark
+✗	打叉	Ballot X
+§	章節符號	Section sign
+＃	全形井號	Fullwidth number sign
+＆	全形和號	Fullwidth ampersand
+＊	全形星號	Fullwidth asterisk
+＠	全形小老鼠	Fullwidth at sign
+♀	女性符號	Female sign
+♂	男性符號	Male sign
+♪	音符	Eighth note
+@箭頭	Arrows	symbols
+→	右箭頭	Rightwards arrow	*
+←	左箭頭	Leftwards arrow
+↑	上箭頭	Upwards arrow
+↓	下箭頭	Downwards arrow
+↗	右上箭頭	North east arrow
+↘	右下箭頭	South east arrow
+↖	左上箭頭	North west arrow
+↙	左下箭頭	South west arrow
+↔	左右箭頭	Left right arrow
+⇒	雙線右箭頭	Rightwards double arrow
+⇔	雙線左右箭頭	Left right double arrow
+@數學	Mathematics	symbols
+＋	全形加號	Fullwidth plus sign
+－	全形減號	Fullwidth hyphen-minus
+×	乘號	Multiplication sign	*
+÷	除號	Division sign
+＝	全形等號	Fullwidth equals sign
+≠	不等號	Not equal to
+≒	約等號	Approximately equal to
+±	正負號	Plus-minus sign	*
+＜	全形小於	Fullwidth less-than sign
+＞	全形大於	Fullwidth greater-than sign
+≦	小於等於	Less-than over equal to
+≧	大於等於	Greater-than over equal to
+∞	無限大	Infinity
+√	根號	Square root
+∵	因為	Because
+∴	所以	Therefore
+∠	角	Angle
+⊥	垂直	Up tack
+∩	交集	Intersection
+∪	聯集	Union
+∫	積分	Integral
+@單位與貨幣	Units and currency	symbols
+％	全形百分比	Fullwidth percent sign
+‰	千分比	Per mille sign
+°	度	Degree sign
+℃	攝氏度	Degree Celsius
+℉	華氏度	Degree Fahrenheit
+㎜	公釐	Millimetre
+㎝	公分	Centimetre
+㎞	公里	Kilometre
+㎡	平方公尺	Square metre
+㎏	公斤	Kilogram
+㏄	立方公分	Cubic centimetre
+＄	全形錢號	Fullwidth dollar sign
+￥	全形日圓	Fullwidth yen sign
+￡	全形英鎊	Fullwidth pound sign
+€	歐元	Euro sign
+@編號	Numbering	symbols
+①	圈號一	Circled digit one
+②	圈號二	Circled digit two
+③	圈號三	Circled digit three
+④	圈號四	Circled digit four
+⑤	圈號五	Circled digit five
+⑥	圈號六	Circled digit six
+⑦	圈號七	Circled digit seven
+⑧	圈號八	Circled digit eight
+⑨	圈號九	Circled digit nine
+⑩	圈號十	Circled number ten
+Ⅰ	羅馬數字一	Roman numeral one
+Ⅱ	羅馬數字二	Roman numeral two
+Ⅲ	羅馬數字三	Roman numeral three
+Ⅳ	羅馬數字四	Roman numeral four
+Ⅴ	羅馬數字五	Roman numeral five
+Ⅵ	羅馬數字六	Roman numeral six
+Ⅶ	羅馬數字七	Roman numeral seven
+Ⅷ	羅馬數字八	Roman numeral eight
+Ⅸ	羅馬數字九	Roman numeral nine
+Ⅹ	羅馬數字十	Roman numeral ten
+@注音聲調	Bopomofo tones	symbols
+ˊ	二聲	Second tone
+ˇ	三聲	Third tone
+ˋ	四聲	Fourth tone
+˙	輕聲	Neutral tone

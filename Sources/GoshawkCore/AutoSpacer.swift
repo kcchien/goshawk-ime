@@ -25,7 +25,10 @@ public enum AutoSpacer {
 
     public static let fullwidthPunctuation: Set<Character> = [
         "，", "。", "！", "？", "；", "：", "「", "」", "『", "』",
-        "（", "）", "、", "…", "—", "《", "》", "〈", "〉", "【", "】"
+        "（", "）", "、", "…", "—", "《", "》", "〈", "〉", "【", "】",
+        // 彎引號是中文引號的另一種寫法，後面的空格比照角引號。結尾彎引號後面的標點寬度
+        // 不看這裡，看整個引號外面的字（`PunctuationMapper.contextCharacter`）。
+        "“", "”", "‘", "’"
     ]
 
     public static func isFullwidthPunctuation(_ ch: Character) -> Bool {

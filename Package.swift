@@ -44,8 +44,12 @@ let package = Package(
             dependencies: ["GoshawkCore"]
         ),
         .testTarget(
+            name: "GoshawkAppTests",
+            dependencies: ["GoshawkApp", "GoshawkCore"]
+        ),
+        .testTarget(
             name: "GoshawkCoreTests",
-            dependencies: ["GoshawkCore"]
+            dependencies: ["GoshawkCore", "GoshawkVerifier"]
         )
     ]
 )

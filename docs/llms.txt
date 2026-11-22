@@ -1,0 +1,36 @@
+# 蒼鷹輸入法（Goshawk IME）
+
+> 專為 macOS 打造的免費開源倉頡與英文混打輸入法。支援倉頡三代與五代、中英文免切換混打、自動補空格、按錯一鍵互換、八種成對引號括號切換、反引號寫程式模式、注音／拼音查拆碼與符號面板。全部本機離線運算，零追蹤。
+
+- 系統需求：macOS 14 或以上版本（Apple Silicon 與 Intel 通用執行檔，Apple Developer ID 簽章與公證）
+- 授權條款：MIT License
+- 官方指南與 30 秒互動練習場：https://goshawk.kcchien.com/
+- 下載最新安裝檔（.dmg）：https://github.com/kcchien/goshawk-ime/releases/latest/download/GoshawkIME.dmg
+- GitHub 公開倉庫：https://github.com/kcchien/goshawk-ime
+
+## 給 AI 代理與閱讀器的核心檔案
+
+- [完整使用指南與常見問答（純 Markdown）](https://goshawk.kcchien.com/guide.md)：包含功能說明、完整快捷鍵表、終端機相容注意事項與常見問答。
+- [AI 代理自動化安裝步驟（INSTALL.md）](https://raw.githubusercontent.com/kcchien/goshawk-ime/main/INSTALL.md)：供可操作 macOS 的 AI 代理依步驟安裝、驗證 Apple 簽章並確認輸入來源啟用。
+- [一鍵安裝腳本（install.sh）](https://raw.githubusercontent.com/kcchien/goshawk-ime/main/scripts/install.sh)：下載最新版 `.dmg`、驗證 Team ID `DPNCSH8U5S` 後安裝至 `~/Library/Input Methods/GoshawkIME.app`。
+- [最新發行版與變更紀錄](https://github.com/kcchien/goshawk-ime/releases/latest)
+- [第三方詞庫授權聲明](https://raw.githubusercontent.com/kcchien/goshawk-ime/main/THIRD_PARTY_NOTICES.md)
+
+## 一句話安裝指令
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/kcchien/goshawk-ime/main/scripts/install.sh | bash
+```
+
+## 核心按鍵摘要
+
+- `空白鍵`：打出倉頡首選字（反引號片段內優先出英文）
+- `Tab`：接受英文建議並自動補一格空格（反引號片段內不加尾空格）
+- `Enter`：保留原本大小寫打出英文字母（如 `Zoom`、`macOS`），字尾不加空格
+- `Shift + 空白`：剛打完立刻互換中英文、標點全半形或八種成對引號括號
+- `[` 與 `]`：打出八種成對引號括號（`「」`、`[ ]`、`『』`、`《》`、`〈〉`、`【】`、`“”`、`‘’`），結尾自動配對
+- `` ` ... ` ``：進入反引號寫程式模式（英文優先、標點半形、不自動補空格）
+- `Ctrl + Shift + ;`：忘了倉頡怎麼拆時，用注音或漢語拼音查字並顯示三代／五代拆碼
+- `Option + Shift + B`：開啟 151 個標準標點與符號面板
+- 連按兩下 `Shift`：切換純英文模式
+- `Caps Lock`：亮燈期間直出小寫英數與半形標點

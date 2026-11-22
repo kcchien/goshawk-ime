@@ -91,21 +91,23 @@ struct EventTranslator {
     /// Returns nil for keys the IME does not interpret; the caller forwards those to the
     /// client. `acceptsEnglishSelection` is true only while an English prediction list is
     /// showing, so Shift+digit otherwise stays an ordinary symbol key.
-    /// `readingLookupActive` 為真時，可印字元與瀏覽鍵都屬於反查面板，雙擊 Shift、
-    /// Shift+數字選英文與 Option+Shift+H 都不作用。
+    /// `layer` 是目前開著的疊加層（讀音反查或符號面板）。有疊加層時，可印字元與瀏覽鍵
+    /// 都屬於那張面板，雙擊 Shift、Shift+數字選英文與 Option+Shift+H 都不作用。
     mutating func translate(
         _ payload: KeyEventPayload,
-        readingLookupActive: Bool = false,
+        layer: InputLayer? = nil,
+        hasChineseContinuation: Bool = false,
         acceptsEnglishSelection: () -> Bool
     ) -> TranslatedEvent? {
-        if !readingLookupActive, Self.isHalfwidthPunctuationToggle(payload) {
+        if layer == nil, Self.isHalfwidthPunctuationToggle(payload) {
             shiftDetector.noteNonModifierKeyPressed()
             shiftHeldSinceShiftedKey = false
             return .toggleHalfwidthPunctuation
         }
         let key = translateKey(
             payload,
-            readingLookupActive: readingLookupActive,
+            layer: layer,
+            hasChineseContinuation: hasChineseContinuation,
             acceptsEnglishSelection: acceptsEnglishSelection
         )
         noteShiftedCharacterKey(payload, produced: key)
@@ -129,8 +131,28 @@ struct EventTranslator {
             && payload.charactersIgnoringModifiers?.lowercased() == "h"
     }
 
-    /// 反查開啟時的瀏覽鍵。`Page Up` 與 `Page Down` 只在這裡用到。
-    private static func readingLookupKey(_ payload: KeyEventPayload) -> KeyInput? {
+    /// Option+Shift+B 依 B 的鍵位辨識：按著 Option 時宿主回報的字元不一定是字母。
+    private static func isSymbolPanelToggle(_ payload: KeyEventPayload) -> Bool {
+        payload.modifierFlags.intersection([.command, .control, .option, .shift]) == [.option, .shift]
+            && payload.keyCode == 11 // kVK_ANSI_B
+    }
+
+    /// 疊加層開啟時的瀏覽鍵。`Page Up` 與 `Page Down` 只在這裡用到。
+    /// 符號面板另外把左右方向鍵當成上一頁、下一頁。
+    private static func layerKey(_ payload: KeyEventPayload, layer: InputLayer) -> KeyInput? {
+        if case .symbolPanel = layer {
+            switch payload.keyCode {
+            case 123: // kVK_LeftArrow
+                return .pageUp
+            case 124: // kVK_RightArrow
+                return .pageDown
+            case 49 where payload.modifierFlags.contains(.shift): // kVK_Space
+                // Shift+空白 不是選取鍵，交給核心吃掉；不帶 Shift 的空白才選焦點列。
+                return .shiftSpace
+            default:
+                break
+            }
+        }
         switch payload.keyCode {
         case 53: // kVK_Escape
             return .escape
@@ -158,6 +180,11 @@ struct EventTranslator {
               chars.count == 1,
               let ch = chars.first,
               isPrintableASCII(ch) else {
+            if case .symbolPanel = layer {
+                // Home、End、往前刪除與功能鍵翻不出按鍵。符號面板開著時不交還宿主，
+                // 否則宿主會在面板底下刪字或移動游標；借核心在面板裡一律吃掉的鍵表示。
+                return .shiftSpace
+            }
             return nil
         }
         return .character(ch.lowercased().first ?? ch)
@@ -165,7 +192,8 @@ struct EventTranslator {
 
     private mutating func translateKey(
         _ payload: KeyEventPayload,
-        readingLookupActive: Bool,
+        layer: InputLayer?,
+        hasChineseContinuation: Bool,
         acceptsEnglishSelection: () -> Bool
     ) -> KeyInput? {
         if payload.isFlagsChanged {
@@ -173,8 +201,8 @@ struct EventTranslator {
                 // Shift 放開了，下一次的 Shift+空白 不再算是沒放手的誤觸。
                 shiftHeldSinceShiftedKey = false
             }
-            guard !readingLookupActive else {
-                // 反查期間不偵測雙擊 Shift，面板關閉後也不該接上先前的半個手勢。
+            guard layer == nil else {
+                // 疊加層開著時不偵測雙擊 Shift，面板關閉後也不該接上先前的半個手勢。
                 shiftDetector = ShiftTapDetector()
                 return nil
             }
@@ -199,6 +227,11 @@ struct EventTranslator {
         // Let system / app shortcuts using Command pass through untouched.
         if payload.modifierFlags.contains(.command) {
             return nil
+        }
+
+        // 放在 Option 分支與疊加層分流之前：面板開著時同一組鍵要能把它關掉。
+        if Self.isSymbolPanelToggle(payload) {
+            return .toggleSymbolPanel
         }
 
         if payload.modifierFlags.contains(.control) {
@@ -232,8 +265,12 @@ struct EventTranslator {
         }
 
         if payload.modifierFlags.contains(.option) {
-            // Only printable symbols and digits are literals. Option+Delete, Option+Return
-            // and Option+arrows are editing commands and must reach the client.
+            // 文字編輯會攔下 Ctrl+Return。Option+Return 在沒有疊加層且顯示接詞時才由輸入法處理。
+            if hasChineseContinuation, layer == nil, !payload.modifierFlags.contains(.shift),
+               payload.keyCode == 36 || payload.keyCode == 76 {
+                return .acceptChineseContinuation
+            }
+            // 其餘 Option 編輯鍵交還宿主。
             if let ch = payload.charactersIgnoringModifiers?.first,
                Self.isPrintableASCII(ch),
                ch != " ",
@@ -243,8 +280,8 @@ struct EventTranslator {
             return nil
         }
 
-        if readingLookupActive {
-            return Self.readingLookupKey(payload)
+        if let layer {
+            return Self.layerKey(payload, layer: layer)
         }
 
         if payload.modifierFlags.contains(.shift),

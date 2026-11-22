@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" role="img" aria-label="蒼鷹輸入法 DMG 安裝視窗底圖：點兩下 GoshawkIME 開始安裝">
+  <defs>
+    <linearGradient id="dmgBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0C2629"/>
+      <stop offset="55%" stop-color="#143D40"/>
+      <stop offset="100%" stop-color="#204E4E"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="50%" cy="38%" r="44%">
+      <stop offset="0%" stop-color="#8FB8A5" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#8FB8A5" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang TC", "Noto Sans TC", sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="720" fill="url(#dmgBg)"/>
+  <rect width="1200" height="720" fill="url(#halo)"/>
+
+  <!-- Subtle top brand wordmark -->
+  <text x="600" y="76" text-anchor="middle" class="sans" font-size="24" font-weight="600" letter-spacing="1.5" fill="rgba(244,240,218,0.72)">蒼鷹輸入法 · Goshawk IME</text>
+
+  <!-- Subtle drop/target halo around the App icon position (logical 300, 136 => 2x 600, 272) -->
+  <rect x="466" y="138" width="268" height="268" rx="48" fill="rgba(244,240,218,0.05)" stroke="rgba(244,240,218,0.22)" stroke-width="2" stroke-dasharray="10 10"/>
+
+  <!-- Small amber chevron pointing up toward the app icon -->
+  <path d="M584 452 L600 436 L616 452" fill="none" stroke="#E6AA56" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Primary bilingual install instruction -->
+  <text x="600" y="514" text-anchor="middle" class="sans" font-size="38" font-weight="700" fill="#F4F0DA">點兩下 GoshawkIME 開始安裝</text>
+  <text x="600" y="562" text-anchor="middle" class="sans" font-size="23" font-weight="500" fill="#8FB8A5">Double-click GoshawkIME to install</text>
+
+  <!-- Bottom trust note -->
+  <text x="600" y="654" text-anchor="middle" class="sans" font-size="18" fill="rgba(244,240,218,0.56)">macOS 14+  ·  Apple Silicon &amp; Intel  ·  純離線運作，不需管理員密碼</text>
+</svg>

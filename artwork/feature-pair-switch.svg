@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 310" width="960" height="310" role="img" aria-label="方括號八種引號與括號切換示意圖：輸入「系統設計」後按 Shift 加空白鍵再按 4，整對立即切換為《系統設計》">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F3236"/>
+      <stop offset="100%" stop-color="#204E4E"/>
+    </linearGradient>
+    <filter id="winShadow" x="-8%" y="-8%" width="116%" height="122%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#061416" flood-opacity="0.34"/>
+    </filter>
+    <filter id="popShadow" x="-8%" y="-14%" width="116%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0A1A1C" flood-opacity="0.20"/>
+    </filter>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Noto Sans TC", sans-serif; }
+      .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+    </style>
+  </defs>
+
+  <rect width="960" height="310" rx="16" fill="url(#bg)"/>
+
+  <!-- Left narrative panel with physical keycaps -->
+  <g transform="translate(40, 44)">
+    <rect x="0" y="0" width="34" height="36" rx="7" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.38)" stroke-width="1.2"/>
+    <rect x="0" y="34" width="34" height="3" rx="1.5" fill="rgba(0,0,0,0.28)"/>
+    <text x="17" y="25" text-anchor="middle" class="mono" font-size="20" font-weight="700" fill="#E6AA56">[</text>
+
+    <rect x="42" y="0" width="34" height="36" rx="7" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.38)" stroke-width="1.2"/>
+    <rect x="42" y="34" width="34" height="3" rx="1.5" fill="rgba(0,0,0,0.28)"/>
+    <text x="59" y="25" text-anchor="middle" class="mono" font-size="20" font-weight="700" fill="#E6AA56">]</text>
+
+    <text x="90" y="28" class="sans" font-size="26" font-weight="600" fill="#F4F0DA">八種引號括號</text>
+  </g>
+
+  <text x="40" y="106" class="sans" font-size="14" fill="#8FB8A5">結尾自動配成同一種，打完還能整對換</text>
+
+  <!-- Step 1: separate Shift + Space physical keycaps -->
+  <g transform="translate(40, 128)">
+    <rect x="0" y="0" width="76" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="38" y="21" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#F4F0DA">⇧ Shift</text>
+    <text x="88" y="21" text-anchor="middle" class="sans" font-size="14" font-weight="600" fill="#8FB8A5">+</text>
+    <rect x="100" y="0" width="78" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="139" y="21" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#F4F0DA">␣ 空白</text>
+    <text x="192" y="21" class="sans" font-size="14.5" font-weight="500" fill="#F4F0DA">開頭結尾一起換</text>
+  </g>
+
+  <!-- Step 2: separate 1 ... 8 physical keycaps -->
+  <g transform="translate(40, 178)">
+    <rect x="0" y="0" width="32" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="16" y="21" text-anchor="middle" class="mono" font-size="14" font-weight="700" fill="#E6AA56">1</text>
+    <text x="44" y="21" text-anchor="middle" class="sans" font-size="13" fill="#8FB8A5">至</text>
+    <rect x="56" y="0" width="32" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="72" y="21" text-anchor="middle" class="mono" font-size="14" font-weight="700" fill="#E6AA56">8</text>
+    <text x="104" y="21" class="sans" font-size="14.5" font-weight="500" fill="#F4F0DA">直選書名號、方頭括號</text>
+  </g>
+
+  <text x="40" y="264" class="sans" font-size="13.5" fill="rgba(244,240,218,0.72)">「」  [ ]  『』  《》  〈〉  【】  “”  ‘’</text>
+
+  <!-- Right macOS window mockup -->
+  <g transform="translate(366, 28)" filter="url(#winShadow)">
+    <rect width="554" height="254" rx="12" fill="#FFFFFF"/>
+    <path d="M12 0 H542 A12 12 0 0 1 554 12 V36 H0 V12 A12 12 0 0 1 12 0 Z" fill="#F3F3F1"/>
+    <line x1="0" y1="36" x2="554" y2="36" stroke="#E2E2DE" stroke-width="1"/>
+    <circle cx="20" cy="18" r="5.5" fill="#FF5F57"/>
+    <circle cx="38" cy="18" r="5.5" fill="#FEBC2E"/>
+    <circle cx="56" cy="18" r="5.5" fill="#28C840"/>
+    <text x="277" y="23" text-anchor="middle" class="sans" font-size="12.5" font-weight="500" fill="#5A6364">讀書筆記.rtf</text>
+
+    <text x="28" y="84" class="sans" font-size="22" fill="#162223">推薦這本書</text>
+    <text x="142" y="84" class="sans" font-size="22" font-weight="600" fill="#215C52">《系統設計》</text>
+    <rect x="276" y="61" width="2" height="28" rx="1" fill="#215C52"/>
+
+    <!-- Inline keycap hint row -->
+    <g transform="translate(28, 100)">
+      <text x="0" y="16" class="sans" font-size="12" fill="#6B7D7F">原打出「系統設計」，按</text>
+      <rect x="136" y="1" width="52" height="21" rx="4" fill="#F3F4F1" stroke="rgba(15,50,54,0.22)"/>
+      <text x="162" y="15" text-anchor="middle" class="sans" font-size="11" font-weight="600" fill="#162223">⇧ Shift</text>
+      <text x="196" y="15" text-anchor="middle" class="sans" font-size="11" fill="#6B7D7F">+</text>
+      <rect x="204" y="1" width="48" height="21" rx="4" fill="#F3F4F1" stroke="rgba(15,50,54,0.22)"/>
+      <text x="228" y="15" text-anchor="middle" class="sans" font-size="11" font-weight="600" fill="#162223">␣ 空白</text>
+      <text x="260" y="16" class="sans" font-size="12" fill="#6B7D7F">再按</text>
+      <rect x="288" y="1" width="22" height="21" rx="4" fill="#215C52"/>
+      <text x="299" y="15" text-anchor="middle" class="mono" font-size="11.5" font-weight="700" fill="#FFFFFF">4</text>
+      <text x="318" y="16" class="sans" font-size="12" fill="#6B7D7F">整對換成《系統設計》</text>
+    </g>
+
+    <!-- Authentic Pair Choice Overlay Bar -->
+    <g transform="translate(22, 140)" filter="url(#popShadow)">
+      <rect width="510" height="48" rx="10" fill="#F8F8F5" stroke="rgba(15,50,54,0.18)" stroke-width="1"/>
+      <text x="14" y="29" class="sans" font-size="11" font-weight="500" fill="#6B7D7F">1</text>
+      <text x="24" y="30" class="sans" font-size="16" font-weight="500" fill="#162223">「」</text>
+      <text x="72" y="29" class="sans" font-size="11" font-weight="500" fill="#6B7D7F">2</text>
+      <text x="83" y="30" class="mono" font-size="15" font-weight="500" fill="#162223">[]</text>
+      <text x="118" y="29" class="sans" font-size="11" font-weight="500" fill="#6B7D7F">3</text>
+      <text x="128" y="30" class="sans" font-size="16" font-weight="500" fill="#162223">『』</text>
+      <rect x="172" y="8" width="60" height="32" rx="6" fill="#215C52"/>
+      <text x="180" y="29" class="sans" font-size="11" font-weight="600" fill="#FFFFFF">4</text>
+      <text x="191" y="30" class="sans" font-size="16" font-weight="700" fill="#FFFFFF">《》</text>
+      <text x="244" y="29" class="sans" font-size="11" font-weight="500" fill="#6B7D7F">5</text>
+      <text x="254" y="30" class="sans" font-size="16" font-weight="500" fill="#162223">〈〉</text>
+      <text x="304" y="29" class="sans" font-size="11" font-weight="500" fill="#6B7D7F">6</text>
+      <text x="314" y="30" class="sans" font-size="16" font-weight="500" fill="#162223">【】</text>
+      <text x="366" y="29" class="sans" font-size="11" font-weight="500" fill="#6B7D7F">7</text>
+      <text x="378" y="30" class="sans" font-size="16" font-weight="500" fill="#162223">“”</text>
+      <text x="424" y="29" class="sans" font-size="11" font-weight="500" fill="#6B7D7F">8</text>
+      <text x="436" y="30" class="sans" font-size="16" font-weight="500" fill="#162223">‘’</text>
+    </g>
+
+    <text x="28" y="226" class="sans" font-size="12" fill="#4E6062">也可以在開頭先選好種類，打完字按下右方括號就會自動配成同一種。</text>
+  </g>
+</svg>

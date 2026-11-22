@@ -82,4 +82,4 @@ defaults delete com.kc.inputmethod.Goshawk
 
 ## 隱私
 
-蒼鷹沒有任何網路連線。學習紀錄存在 `~/Library/Application Support/GoshawkIME/usage-history.json`，只記選過的字詞與次數，不記時間、程式名稱或按鍵。
+打字內容不會離開這台電腦。蒼鷹唯一的網路連線是每天最多一次向 GitHub 查詢最新版本號，請求不含輸入內容與識別資料，可以在設定的「關於」關閉「自動檢查更新」。學習紀錄存在 `~/Library/Application Support/GoshawkIME/usage-history.json`，只記選過的字詞與次數，以及符號面板最近選過的符號，不記時間、程式名稱或按鍵。

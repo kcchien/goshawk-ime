@@ -15,11 +15,13 @@ final class ReadingLookupRowView: NSView {
     private let codeLabel = NSTextField(labelWithString: "")
     private let radicalLabel = NSTextField(labelWithString: "")
     private let row = NSStackView()
+    private let fontSize: OverlayFontSize
 
     static let focusFill = NSColor(srgbRed: 0.13, green: 0.36, blue: 0.32, alpha: 1)
 
-    init(row rowModel: ReadingLookupPanel.Row) {
+    init(row rowModel: ReadingLookupPanel.Row, fontSize: OverlayFontSize) {
         self.number = rowModel.number
+        self.fontSize = fontSize
         super.init(frame: .zero)
 
         let columns = ReadingLookupView.columns(for: rowModel)
@@ -29,14 +31,20 @@ final class ReadingLookupRowView: NSView {
         codeLabel.stringValue = columns.code
         radicalLabel.stringValue = columns.radicals
 
-        markerLabel.font = .systemFont(ofSize: 11, weight: .bold)
-        numberLabel.font = .systemFont(ofSize: 11, weight: .medium)
-        characterLabel.font = .systemFont(ofSize: 17, weight: .medium)
-        codeLabel.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
-        radicalLabel.font = .systemFont(ofSize: 13, weight: .regular)
+        let metrics = fontSize.metrics
+        markerLabel.font = .systemFont(ofSize: metrics.caption, weight: .bold)
+        numberLabel.font = .systemFont(ofSize: metrics.caption, weight: .medium)
+        characterLabel.font = .systemFont(ofSize: metrics.primary, weight: .medium)
+        codeLabel.font = .monospacedSystemFont(ofSize: metrics.secondary, weight: .regular)
+        radicalLabel.font = .systemFont(ofSize: metrics.secondary, weight: .regular)
 
-        for (label, width) in [(markerLabel, 10.0), (numberLabel, 14.0), (characterLabel, 24.0), (codeLabel, 62.0)] {
-            label.widthAnchor.constraint(equalToConstant: width).isActive = true
+        // 寬度是標準檔的值，其他檔跟著那一欄的字級縮放。
+        let fixedColumns: [(NSTextField, CGFloat, KeyPath<OverlayFontMetrics, CGFloat>)] = [
+            (markerLabel, 10, \.caption), (numberLabel, 14, \.caption),
+            (characterLabel, 24, \.primary), (codeLabel, 62, \.secondary)
+        ]
+        for (label, width, role) in fixedColumns {
+            label.widthAnchor.constraint(equalToConstant: fontSize.columnWidth(width, following: role)).isActive = true
         }
         radicalLabel.maximumNumberOfLines = 1
         radicalLabel.lineBreakMode = .byTruncatingTail
@@ -77,7 +85,7 @@ final class ReadingLookupRowView: NSView {
         layer?.backgroundColor = focused ? Self.focusFill.cgColor : NSColor.clear.cgColor
         layer?.borderWidth = focused && highContrast ? 1.5 : 0
         layer?.borderColor = NSColor.labelColor.cgColor
-        characterLabel.font = .systemFont(ofSize: 17, weight: focused ? .bold : .medium)
+        characterLabel.font = .systemFont(ofSize: fontSize.metrics.primary, weight: focused ? .bold : .medium)
         let primary = focused ? NSColor.white : NSColor.labelColor
         let secondary = focused ? NSColor.white : NSColor.secondaryLabelColor
         markerLabel.textColor = primary
@@ -111,20 +119,30 @@ final class ReadingLookupView: NSStackView {
     private let footerLabel = NSTextField(labelWithString: "")
     private let divider = NSBox()
 
+    /// 各列在下一次 `render` 重建時才換字級，所以換檔之後要重畫一次。
+    var fontSize: OverlayFontSize = .medium {
+        didSet { applyFonts() }
+    }
+
+    private func applyFonts() {
+        let metrics = fontSize.metrics
+        readingLabel.font = .systemFont(ofSize: metrics.secondary, weight: .semibold)
+        placeholderLabel.font = .systemFont(ofSize: metrics.secondary, weight: .regular)
+        footerLabel.font = .systemFont(ofSize: metrics.caption, weight: .regular)
+        schemeControl.font = .systemFont(ofSize: metrics.caption, weight: .regular)
+    }
+
     init() {
         super.init(frame: .zero)
 
-        readingLabel.font = .systemFont(ofSize: 13, weight: .semibold)
         readingLabel.maximumNumberOfLines = 1
-        placeholderLabel.font = .systemFont(ofSize: 13, weight: .regular)
         placeholderLabel.textColor = .secondaryLabelColor
-        footerLabel.font = .systemFont(ofSize: 11, weight: .regular)
         footerLabel.textColor = .secondaryLabelColor
 
         schemeControl.segmentStyle = .texturedRounded
         schemeControl.target = self
         schemeControl.action = #selector(schemeChanged(_:))
-        schemeControl.font = .systemFont(ofSize: 11, weight: .regular)
+        applyFonts()
 
         headerRow.orientation = .horizontal
         headerRow.alignment = .firstBaseline
@@ -174,7 +192,7 @@ final class ReadingLookupView: NSStackView {
             view.removeFromSuperview()
         }
         for (index, row) in panel.rows.enumerated() {
-            let view = ReadingLookupRowView(row: row)
+            let view = ReadingLookupRowView(row: row, fontSize: fontSize)
             view.onClick = { [weak self] number in self?.onRowClick?(number) }
             view.setFocused(index == panel.focusedRow, highContrast: highContrast)
             rowsStack.addArrangedSubview(view)
@@ -232,7 +250,11 @@ final class ReadingLookupView: NSStackView {
         guard let code = row.code else {
             return ("\(row.number)", row.character, UIText.readingCodeMissing.text, "")
         }
-        return ("\(row.number)", row.character, code, row.radicals ?? "")
+        var radicals = row.radicals ?? ""
+        if row.directInputAvailable == false {
+            radicals += "  " + UIText.readingDirectInputUnavailable.text
+        }
+        return ("\(row.number)", row.character, code, radicals)
     }
 
     static func headerText(for panel: ReadingLookupPanel) -> String {
@@ -267,7 +289,9 @@ final class ReadingLookupView: NSStackView {
         guard let code = row.code else {
             return UIText.readingRowLabelMissing.text(row.number, row.character)
         }
-        return UIText.readingRowLabel.text(row.number, row.character, code, row.radicals ?? "")
+        let label = UIText.readingRowLabel.text(row.number, row.character, code, row.radicals ?? "")
+        return row.directInputAvailable == false
+            ? label + UIText.listSeparator.text + UIText.readingDirectInputUnavailable.text : label
     }
 
     static func accessibilityLabel(for panel: ReadingLookupPanel) -> String {

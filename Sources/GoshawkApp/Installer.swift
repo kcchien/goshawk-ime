@@ -25,6 +25,18 @@ enum Installer {
             && bundleURL.deletingLastPathComponent().lastPathComponent != "Input Methods"
     }
 
+    /// 安裝視窗完成畫面的說明。覆蓋既有版本時多提醒一句：系統可能還握著舊版，要登出再登入。
+    static func completionDetail(isUpgrade: Bool) -> UIText {
+        isUpgrade ? .installUpgradeDoneDetail : .installDoneDetail
+    }
+
+    /// 執行複製並回傳完成畫面的說明。複製之後安裝位置一定有東西，所以在複製之前看是不是升級。
+    static func copyAndDescribe(destination: URL, copy: () throws -> Void) rethrows -> UIText {
+        let isUpgrade = FileManager.default.fileExists(atPath: destination.path)
+        try copy()
+        return completionDetail(isUpgrade: isUpgrade)
+    }
+
     /// 重複執行的結果相同：已安裝就覆蓋成這一份，已註冊就維持註冊。
     static func install() throws {
         try copyToInputMethods()
@@ -37,20 +49,30 @@ enum Installer {
             throw Failure(message: "要從 GoshawkIME.app 裡執行才能安裝。")
         }
         let destination = installedURL
-        let fileManager = FileManager.default
         if source.standardizedFileURL != destination.standardizedFileURL {
-            terminateInstalledInstances()
             do {
-                try fileManager.createDirectory(
-                    at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
-                if fileManager.fileExists(atPath: destination.path) {
-                    try fileManager.removeItem(at: destination)
-                }
-                try fileManager.copyItem(at: source, to: destination)
-                removeQuarantine(at: destination)
+                try copyBundle(from: source, to: destination)
+                terminateInstalledInstances()
             } catch {
                 throw Failure(message: "無法複製到 \(destination.path)：\(error.localizedDescription)")
             }
+        }
+    }
+
+    static func copyBundle(from source: URL, to destination: URL) throws {
+        let files = FileManager.default
+        try files.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+        // 先在目的磁碟備妥整份 App。複製出錯時，舊版仍可繼續使用。
+        let work = try files.url(for: .itemReplacementDirectory, in: .userDomainMask,
+                                 appropriateFor: destination, create: true)
+        defer { try? files.removeItem(at: work) }
+        let staged = work.appendingPathComponent(destination.lastPathComponent)
+        try files.copyItem(at: source, to: staged)
+        removeQuarantine(at: staged)
+        if files.fileExists(atPath: destination.path) {
+            _ = try files.replaceItemAt(destination, withItemAt: staged, options: .usingNewMetadataOnly)
+        } else {
+            try files.moveItem(at: staged, to: destination)
         }
     }
 
@@ -65,8 +87,6 @@ enum Installer {
     }
 
     private static func registerInputSource() throws {
-        disableSources(bundleIdentifier: "com.kc.inputmethod.KCIME")  // 2026-11-19 改名前的識別碼
-
         let status = TISRegisterInputSource(installedURL as CFURL)
         guard status == noErr else {
             throw Failure(message: "系統拒絕註冊輸入來源，錯誤碼 \(status)。")
@@ -82,6 +102,12 @@ enum Installer {
         for source in registered {
             TISEnableInputSource(source)
         }
+        let mode = [kTISPropertyInputSourceID as String: bundleIdentifier + ".Cangjie"] as CFDictionary
+        guard let enabled = TISCreateInputSourceList(mode, false)?.takeRetainedValue() as? [TISInputSource],
+              !enabled.isEmpty else {
+            throw Failure(message: "輸入法已安裝，但系統未啟用倉頡。請在系統設定的鍵盤輸入方式加入蒼鷹輸入法。")
+        }
+        disableSources(bundleIdentifier: "com.kc.inputmethod.KCIME")  // 舊版輸入來源留到新版可用再停用。
     }
 
     /// 只移除輸入法本身。偏好與學習紀錄留著，重新安裝時還在。
@@ -149,7 +175,7 @@ enum Installer {
             primary.action = #selector(primaryPressed)
             cancel.keyEquivalent = "\u{1b}"
             cancel.target = self
-            cancel.action = #selector(close)
+            cancel.action = #selector(secondaryPressed)
 
             let buttons = NSStackView(views: [cancel, primary])
             let stack = NSStackView(views: [icon, title, detail, buttons])
@@ -166,25 +192,47 @@ enum Installer {
             do {
                 switch step {
                 case .asking:
-                    try Installer.copyToInputMethods()
+                    let done = try Installer.copyAndDescribe(
+                        destination: Installer.installedURL, copy: Installer.copyToInputMethods)
                     step = .copied
                     title.stringValue = UIText.installDone.text
-                    detail.stringValue = UIText.installDoneDetail.text
-                    primary.title = UIText.installClose.text
-                    cancel.isHidden = true
+                    detail.stringValue = done.text
+                    // 複製完成後同時提供「開啟 30 秒上手指南」與「好」，兩顆都會先註冊輸入來源再關閉。
+                    primary.title = UIText.installOpenGuide.text
+                    cancel.title = UIText.installClose.text
+                    cancel.isHidden = false
                 case .copied:
                     try Installer.registerInputSource()
+                    GuideLauncher.open()
                     close()
                 case .failed:
                     close()
                 }
             } catch {
-                step = .failed
-                title.stringValue = UIText.installFailed.text
-                detail.stringValue = (error as? Failure)?.message ?? "\(error)"
-                primary.title = UIText.installClose.text
-                cancel.isHidden = true
+                showFailure(error)
             }
+        }
+
+        @objc private func secondaryPressed() {
+            switch step {
+            case .asking, .failed:
+                close()
+            case .copied:
+                do {
+                    try Installer.registerInputSource()
+                    close()
+                } catch {
+                    showFailure(error)
+                }
+            }
+        }
+
+        private func showFailure(_ error: any Error) {
+            step = .failed
+            title.stringValue = UIText.installFailed.text
+            detail.stringValue = (error as? Failure)?.message ?? "\(error)"
+            primary.title = UIText.installClose.text
+            cancel.isHidden = true
         }
 
         @objc private func close() {
@@ -208,7 +256,7 @@ enum Installer {
     private static func terminateInstalledInstances() {
         let me = ProcessInfo.processInfo.processIdentifier
         for running in NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier)
-        where running.processIdentifier != me {
+        where running.processIdentifier != me && running.bundleURL?.standardizedFileURL.path == installedURL.standardizedFileURL.path {
             running.forceTerminate()
         }
     }

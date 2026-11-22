@@ -17,6 +17,7 @@ public enum KeyInput: Sendable, Hashable {
     case character(Character)
     case space
     case shiftSpace
+    case acceptChineseContinuation
     /// Caps Lock 燈號的新狀態。亮燈期間引擎直接輸出鍵面半形字元。
     case capsLock(Bool)
     case tab
@@ -38,8 +39,10 @@ public enum KeyInput: Sendable, Hashable {
     case toggleReadingLookup
     case pageUp
     case pageDown
-    /// 點選反查面板本頁的第 n 列，1 起算。不論是否已進入候選選取都直接選字。
-    case readingLookupPick(Int)
+    /// 點選面板本頁的第 n 列，1 起算。讀音反查與符號面板共用，反查不論是否已進入候選選取都直接選字。
+    case panelPick(Int)
+    /// `Option+Shift+B` 或選單的「符號面板」。開著面板時再按一次就關閉。
+    case toggleSymbolPanel
 
     public var tokenName: String {
         switch self {
@@ -49,6 +52,8 @@ public enum KeyInput: Sendable, Hashable {
             return "SPACE"
         case .shiftSpace:
             return "SHIFT_SPACE"
+        case .acceptChineseContinuation:
+            return "ACCEPT_CONTINUATION"
         case .capsLock(let isOn):
             return isOn ? "CAPS_ON" : "CAPS_OFF"
         case .tab:
@@ -85,8 +90,10 @@ public enum KeyInput: Sendable, Hashable {
             return "PGUP"
         case .pageDown:
             return "PGDN"
-        case .readingLookupPick(let row):
+        case .panelPick(let row):
             return "PICK_\(row)"
+        case .toggleSymbolPanel:
+            return "SYMBOLS"
         }
     }
 
@@ -112,6 +119,8 @@ public enum KeyInput: Sendable, Hashable {
             return .space
         case "SHIFT_SPACE":
             return .shiftSpace
+        case "ACCEPT_CONTINUATION":
+            return .acceptChineseContinuation
         case "CAPS_ON":
             return .capsLock(true)
         case "CAPS_OFF":
@@ -156,6 +165,8 @@ public enum KeyInput: Sendable, Hashable {
             return .doubleShift
         case "LOOKUP":
             return .toggleReadingLookup
+        case "SYMBOLS":
+            return .toggleSymbolPanel
         case "PGUP":
             return .pageUp
         case "PGDN":
@@ -187,7 +198,7 @@ public enum KeyInput: Sendable, Hashable {
                 return .selectEnglishPrediction(digit)
             }
             if token.hasPrefix("PICK_"), token.count == 6, let row = token.last?.wholeNumberValue, (1...9).contains(row) {
-                return .readingLookupPick(row)
+                return .panelPick(row)
             }
             if token.hasPrefix("OPT_"), token.count == 5, let ch = token.last {
                 return .optionLiteral(ch)
@@ -367,6 +378,78 @@ public enum RevertEnglishStyle: Sendable, Hashable {
     case rawWithSpace
 }
 
+/// 成對符號的種類。順序就是選項列的顯示順序與數字編號。
+/// 只收開頭與結尾是不同字元的符號：直引號開關同形，從文字分不出哪個是開頭。
+public enum PairStyle: String, CaseIterable, Sendable, Hashable, Codable {
+    case corner, square, doubleCorner, doubleAngle, singleAngle,
+         lenticular, curlyDouble, curlySingle
+
+    public var opener: Character {
+        switch self {
+        case .corner: return "「"
+        case .square: return "["
+        case .doubleCorner: return "『"
+        case .doubleAngle: return "《"
+        case .singleAngle: return "〈"
+        case .lenticular: return "【"
+        case .curlyDouble: return "“"
+        case .curlySingle: return "‘"
+        }
+    }
+
+    public var closer: Character {
+        switch self {
+        case .corner: return "」"
+        case .square: return "]"
+        case .doubleCorner: return "』"
+        case .doubleAngle: return "》"
+        case .singleAngle: return "〉"
+        case .lenticular: return "】"
+        case .curlyDouble: return "”"
+        case .curlySingle: return "’"
+        }
+    }
+
+    public static func style(opening ch: Character) -> PairStyle? {
+        allCases.first { $0.opener == ch }
+    }
+
+    public static func style(closing ch: Character) -> PairStyle? {
+        allCases.first { $0.closer == ch }
+    }
+
+    /// 從 `origin` 出發的循環順序。半形方括號起點的第一下先到角引號，
+    /// 「第一下換寬度」才不會因為清單變長而改變；其餘起點從自己的位置往後走，到底接回第一種。
+    public static func cycle(from origin: PairStyle) -> [PairStyle] {
+        if origin == .square {
+            return [.square] + allCases.filter { $0 != .square }
+        }
+        let start = allCases.firstIndex(of: origin) ?? 0
+        return Array(allCases[start...] + allCases[..<start])
+    }
+}
+
+/// 成對符號紀錄的內容：哪一側、從哪一種開始、現在是哪一種、怎麼來的。
+public struct PairSwitch: Sendable, Hashable {
+    public enum Side: Sendable, Hashable { case opener, closer }
+    /// 這筆紀錄怎麼來的：剛打出來、剛用 Shift+空白 換到、剛用數字選到。
+    public enum Step: Sendable, Hashable { case typed, cycled, picked }
+
+    public let side: Side
+    /// 剛打出來時的種類，決定循環順序。
+    public let origin: PairStyle
+    /// 目前留在文件上的種類。
+    public let current: PairStyle
+    public let step: Step
+
+    public init(side: Side, origin: PairStyle, current: PairStyle, step: Step) {
+        self.side = side
+        self.origin = origin
+        self.current = current
+        self.step = step
+    }
+}
+
 /// 上一個按鍵是一次可反悔的送出時，引擎記住的東西。只活一個按鍵。
 public struct RevertRecord: Sendable, Hashable {
     /// 送出那個按鍵之前的引擎狀態。反悔就是回到這裡再送一次。
@@ -375,29 +458,64 @@ public struct RevertRecord: Sendable, Hashable {
         public let buffer: String
         public let selectedCandidateIndex: Int
         public let selectedEnglishIndex: Int
-        public let documentText: String
+        /// 引擎裁掉前文鏡像的開頭時，這裡跟著裁掉同一段，兩邊才對得上。
+        public internal(set) var documentText: String
         public let pendingAutoSpace: Bool
         public let usageHistory: UsageHistory
         public let snippet: SnippetContext
     }
 
-    /// 這次能對調的是什麼。兩種情形各自只帶自己要用的東西。
+    /// 這次能對調的是什麼。三種情形各自只帶自己要用的東西。
     public enum Kind: Sendable, Hashable {
         /// 中英對調：目前留在文件上的是哪一軌，以及英文那一軌要用哪一種送出。
         case track(side: RevertSide, englishStyle: RevertEnglishStyle)
         /// 標點寬度對調：按下的那個鍵面字元，以及對調後要出的寬度。
         case punctuationWidth(key: Character, swapToFullwidth: Bool)
+        /// 成對符號：開頭與結尾要一起換，所以不能當成單一標點的寬度對調。
+        case pair(PairSwitch)
+        /// 右方括號送出了全形結尾，鏡像裡找不到開頭，但鏡像之前還有看不到的前文：
+        /// 分不出它是落單的還是某一對的結尾，所以不換，Shift+空白 被擋下並提示。
+        case unresolvedCloser
     }
 
-    public let snapshot: Snapshot
+    public internal(set) var snapshot: Snapshot
     public let kind: Kind
-    /// 目前留在文件上的完整文字，含當時補的前導與尾端空格。反悔時整段換掉。
+    /// 反悔時整段換掉、外層要先讀回確認的文字，含當時補的前導與尾端空格。
+    /// 成對紀錄的結尾側是鏡像上從開頭到結尾的整段，比那次按鍵送出的文字長。
     public let committedText: String
     /// 目前留在文件上的字詞或標點本身，不含空格。
     public let committedCore: String
     /// 對調後會換成的字詞。中英對調拿它當浮窗提示；標點寬度對調不顯示提示，
-    /// 這裡是另一個寬度的那個字元。
+    /// 這裡是另一個寬度的那個字元。成對紀錄是循環上下一種的那個符號。
     public let alternativeCore: String
+
+    /// 紀錄的文字比那次按鍵送出的長，含更早就落地的內容。外層只看這個性質，不必認得括號：
+    /// 這種紀錄不能在暫存的標記文字裡換，只能讀回整段相符後一次取代。
+    public var spansEarlierCommits: Bool {
+        if case .pair(let pair) = kind { return pair.side == .closer }
+        return false
+    }
+}
+
+/// 成對符號切換之後浮窗選項列要畫的內容。八種的順序固定，所以只需要目前是哪一種。
+public struct PairChoice: Sendable, Equatable, Codable {
+    public let current: PairStyle
+    /// 數字這時會不會直選種類。選項列只在會直選時顯示編號。
+    public let digitsPick: Bool
+
+    public init(current: PairStyle, digitsPick: Bool) {
+        self.current = current
+        self.digitsPick = digitsPick
+    }
+}
+
+/// 成對符號的結尾按了 Shift+空白 卻沒換成時，浮窗要閃一行提示說明原因。
+/// 只是一次性的輸出，不是引擎狀態。
+public enum PairSwitchNotice: String, Sendable, Hashable, Codable {
+    /// 整段超過字數上限、跨行或含附件占位字元，或是開頭在看得到的前文之外。由核心判定。
+    case spanUnsupported
+    /// 宿主讀不回文字或正在暫存，沒辦法回頭改開頭。由外層判定，核心不會給這個值。
+    case hostReadbackUnavailable
 }
 
 public struct StepEffect: Sendable, Equatable, Codable {
@@ -410,8 +528,11 @@ public struct StepEffect: Sendable, Equatable, Codable {
     public let overlay: OverlayState?
     /// 反查開啟時面板要畫的內容。外層看到它就顯示反查面板，取代雙軌內容。
     public let readingLookupPanel: ReadingLookupPanel?
+    /// 符號面板開啟時要畫的內容。與 `readingLookupPanel` 不會同時有值。
+    public let symbolPanel: SymbolPanelContent?
     public let handled: Bool
-    public let documentText: String
+    /// 按鍵之後的前文鏡像。超過 `InputEngine.documentMirrorLimit` 時只有尾端那一段。
+    public internal(set) var documentText: String
     public let pendingAutoSpace: Bool
     /// 這次送出的文字可以用 Shift+空白 對調。外層據此決定要不要先暫存。反悔本身也是可反悔的送出：
     /// 那時 `deletedBackwardCount` 是上一次送出的完整字元數，`committedText` 是對調後的完整文字。
@@ -419,6 +540,11 @@ public struct StepEffect: Sendable, Equatable, Codable {
     /// 浮窗要提示的「再按 Shift+空白 會換成什麼」，不含空格。
     /// 可反悔但不該顯示提示時為 nil（標點寬度對調），所以外層不得自己從 `revertible` 推。
     public let revertPreview: String?
+    /// 這個按鍵是一次成對符號切換時，浮窗要顯示的選項列。單純打出括號時為 nil。
+    /// 與 `revertPreview` 是兩種提示，不會同時有值。
+    public let pairChoice: PairChoice?
+    /// 成對切換被擋下、按鍵被吃掉時要提示的原因。其餘按鍵一律為 nil，不會與 `pairChoice` 同時有值。
+    public let pairSwitchNotice: PairSwitchNotice?
 
     public init(
         state: EngineStateKind,
@@ -429,14 +555,19 @@ public struct StepEffect: Sendable, Equatable, Codable {
         deletedBackwardCount: Int,
         overlay: OverlayState?,
         readingLookupPanel: ReadingLookupPanel? = nil,
+        symbolPanel: SymbolPanelContent? = nil,
         handled: Bool,
         documentText: String,
         pendingAutoSpace: Bool,
         revertible: Bool = false,
-        revertPreview: String? = nil
+        revertPreview: String? = nil,
+        pairChoice: PairChoice? = nil,
+        pairSwitchNotice: PairSwitchNotice? = nil
     ) {
         self.revertible = revertible
         self.revertPreview = revertPreview
+        self.pairChoice = pairChoice
+        self.pairSwitchNotice = pairSwitchNotice
         self.state = state
         self.buffer = buffer
         self.committedText = committedText
@@ -445,6 +576,7 @@ public struct StepEffect: Sendable, Equatable, Codable {
         self.deletedBackwardCount = deletedBackwardCount
         self.overlay = overlay
         self.readingLookupPanel = readingLookupPanel
+        self.symbolPanel = symbolPanel
         self.handled = handled
         self.documentText = documentText
         self.pendingAutoSpace = pendingAutoSpace
@@ -458,6 +590,9 @@ public struct EngineConfiguration: Sendable, Equatable {
     public var autoPunctuationEnabled: Bool
     public var ctrlBracketsQuotesEnabled: Bool
     public var developerVocabularyEnabled: Bool
+    public var chineseContinuationEnabled = false
+    public var personalTermsEnabled = false
+    public var personalTerms: PersonalTerms = .empty
     /// 依使用習慣調整英文預測順序。關閉時既不套用也不記錄，已存的紀錄保留。
     public var learnsEnglishPredictions: Bool
     /// 依使用習慣調整倉頡重碼順序。關閉後同一組按鍵永遠送出同一個字。

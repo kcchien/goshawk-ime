@@ -40,15 +40,18 @@ public struct ReadingLookupPanel: Sendable, Hashable, Codable {
         /// 本頁序號，1 起算。
         public let number: Int
         public let character: String
-        /// 目前代別的原生拆碼，多個時取第一個。nil 代表本代未收錄。
+        /// 優先顯示目前代別能正查到這個字的原生碼。nil 代表本代未收錄。
         public let code: String?
         public let radicals: String?
+        /// 正查該碼是否列出這個字。沒有原生碼或讀取舊紀錄時為 nil。
+        public let directInputAvailable: Bool?
 
-        public init(number: Int, character: String, code: String?, radicals: String?) {
+        public init(number: Int, character: String, code: String?, radicals: String?, directInputAvailable: Bool? = nil) {
             self.number = number
             self.character = character
             self.code = code
             self.radicals = radicals
+            self.directInputAvailable = directInputAvailable
         }
     }
 

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>蒼鷹輸入法 Goshawk IME · 30 秒上手與使用指南</title>
+  <meta name="description" content="macOS 倉頡與英文混打輸入法。免安裝 30 秒互動試打教學、自由練習場、精簡操作指南與常見問答。支援倉頡三代與五代，純離線運作，零追蹤。">
+  <link rel="canonical" href="https://goshawk.kcchien.com/">
+  <link rel="alternate" type="text/markdown" href="./guide.md" title="蒼鷹輸入法完整使用指南（Markdown）">
+  <link rel="alternate" type="text/plain" href="./llms.txt" title="Goshawk IME LLMs Index">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="蒼鷹輸入法 Goshawk IME · macOS 倉頡與英文無縫混打輸入法">
+  <meta property="og:description" content="中文照常按空白鍵拆倉頡，英文直接拼按 Tab 補完並自動留空格。支援倉頡三代與五代、注音／拼音查拆碼、符號面板，純離線開源。">
+  <meta property="og:url" content="https://goshawk.kcchien.com/">
+  <meta property="og:image" content="https://raw.githubusercontent.com/kcchien/goshawk-ime/main/artwork/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="./assets/goshawk.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "蒼鷹輸入法 (Goshawk IME)",
+        "alternateName": "Goshawk IME",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "macOS 14 or later",
+        "softwareRequirements": "macOS 14+ (Apple Silicon & Intel Universal)",
+        "license": "https://opensource.org/licenses/MIT",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "TWD"
+        },
+        "url": "https://goshawk.kcchien.com/",
+        "downloadUrl": "https://github.com/kcchien/goshawk-ime/releases/latest/download/GoshawkIME.dmg",
+        "codeRepository": "https://github.com/kcchien/goshawk-ime",
+        "description": "專為 macOS 設計的開源倉頡與英文混打輸入法，支援倉頡三代與五代、自動中英空格、Shift 加空白一鍵互換、八種成對引號括號切換、反引號寫程式模式、注音與拼音查拆碼及符號面板，全程本機離線運作。"
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "macOS 上有不用一直切換輸入法就能中英混打的倉頡輸入法嗎？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "有。蒼鷹輸入法（Goshawk IME）專為 macOS 14 以上版本設計，讓倉頡拆碼與英文輸入共用同一組鍵盤：按空白鍵打出中文、按 Tab 接受英文並自動補一格中英空格、按 Enter 保留原本大小寫（如 Zoom、macOS），寫中英混雜的訊息或文件完全不必切換輸入法。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "蒼鷹輸入法支援倉頡三代還是倉頡五代？需要哪一版 macOS？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "兩代都支援。預設為倉頡三代，可從選單列的「設定…」即時切換為倉頡五代。安裝檔為單一通用執行檔，支援 macOS 14 或以上版本的 Apple Silicon 與 Intel Mac，並通過 Apple Developer ID 簽章與公證。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "從 macOS 內建倉頡換到蒼鷹需要重新學拆碼嗎？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "不需要。倉頡拆碼與空白鍵送字的習慣與原本完全相同，符號面板也沿用 macOS 內建倉頡的 Option + Shift + B。差別只在夾帶英文時改按 Tab 或 Enter，按錯空白鍵也能用 Shift + 空白立刻互換，約 30 秒就能適應。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "蒼鷹輸入法安全嗎？會把打字內容上傳到雲端嗎？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "打字內容絕不會離開你的 Mac。倉頡拆碼、英文預測、注音與拼音查拆碼與個人選字學習全部在本機離線執行，且開源採 MIT 授權。唯一可選的網路連線是「自動檢查更新」，每天最多向 GitHub 查詢一次最新公開版號，不含任何輸入資料或識別資訊，也可以在設定的「關於」關閉。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "打倉頡臨時忘了某個字怎麼拆，在蒼鷹裡怎麼查？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "原地按下 Ctrl + Shift + ; 即可開啟查拆碼面板（原本正在打的字母會保留），直接用標準大千注音或按 Tab 切換漢語拼音輸入讀音，面板會列出同音字以及目前倉頡代別的字母碼與字根。你可以直接按數字選字，也可以看完拆碼按 Esc 回到原本位置繼續自己拆。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "在 VS Code、Ghostty、Herdr 或終端機裡使用蒼鷹正常嗎？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "正常。蒼鷹針對程式碼與終端機做過專門設計：輸入檔名如 my.file 或 cd .. 時句點不會誤轉全形，用反引號包指令會自動切為英文優先且不補多餘空格。若使用會攔截 Tab 的終端機（如 Herdr）改按 Enter 送出英文；在 Ghostty 或 Herdr 打全形標點先打半形再按 Shift + 空白切換即可。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "如何安裝、覆蓋升級或完全移除蒼鷹輸入法？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "下載最新版 GoshawkIME.dmg，點兩下裡面的 GoshawkIME 按「安裝」，再從右上角選單列切換到「蒼鷹輸入法」即可；也可以用一行 curl 指令自動驗證簽章安裝。覆蓋升級會保留設定與學習紀錄，若升級後仍出現舊版行為，登出 macOS 再登入一次即可。移除請執行 ~/Library/Input\\ Methods/GoshawkIME.app/Contents/MacOS/GoshawkApp --uninstall。"
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="#top" aria-label="蒼鷹輸入法首頁">
+        <img src="./assets/goshawk.svg" width="32" height="32" alt="">
+        <span class="brand-name" data-i18n="brandName">蒼鷹輸入法</span>
+        <span class="brand-sub">Goshawk</span>
+      </a>
+
+      <nav class="nav-links" aria-label="主要導覽">
+        <a href="#onboarding" data-i18n="navOnboarding">30 秒上手</a>
+        <a href="#playground" data-i18n="navPlayground">自由練習場</a>
+        <a href="#manual" data-i18n="navManual">使用指南</a>
+        <a href="#cheatsheet" data-i18n="navCheatsheet">快捷鍵</a>
+        <a href="#faq" data-i18n="navFaq">常見問答</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <div class="copy-split" id="copySplit">
+          <button type="button" class="copy-main-btn" id="copyPageBtn" title="複製整頁為 Markdown">
+            <svg class="copy-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.8A1.3 1.3 0 0 0 9.2 2.5H3.8A1.3 1.3 0 0 0 2.5 3.8v5.4a1.3 1.3 0 0 0 1.3 1.3h1.7"/></svg>
+            <span id="copyPageLabel" data-i18n="copyPageBtn">複製頁面</span>
+          </button>
+          <button type="button" class="copy-caret-btn" id="copyMenuToggle" aria-haspopup="menu" aria-expanded="false" aria-label="更多 AI 讀取與複製選項">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3"/></svg>
+          </button>
+          <div class="copy-dropdown is-hidden" id="copyDropdown" role="menu">
+            <button type="button" class="copy-menu-item" id="menuCopyMd" role="menuitem">
+              <strong data-i18n="menuCopyMdTitle">複製本頁為 Markdown</strong>
+              <span data-i18n="menuCopyMdDesc">含安裝、快捷鍵與常見問答，直接貼給 AI</span>
+            </button>
+            <a class="copy-menu-item" href="./guide.md" target="_blank" rel="noopener noreferrer" role="menuitem">
+              <strong data-i18n="menuViewMdTitle">檢視純 Markdown ↗</strong>
+              <span data-i18n="menuViewMdDesc">開啟 guide.md 純文字版本</span>
+            </a>
+            <a class="copy-menu-item" href="./llms.txt" target="_blank" rel="noopener noreferrer" role="menuitem">
+              <strong data-i18n="menuLlmsTitle">開啟 llms.txt ↗</strong>
+              <span data-i18n="menuLlmsDesc">AI 代理與爬蟲專用結構化索引</span>
+            </a>
+            <button type="button" class="copy-menu-item" id="menuCopyAiInstall" role="menuitem">
+              <strong data-i18n="menuAiInstallTitle">複製 AI 代理安裝指令</strong>
+              <span data-i18n="menuAiInstallDesc">貼給能操作 Mac 的 AI 代理自動安裝</span>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="icon-btn" id="langToggle" aria-label="切換語言">EN</button>
+        <button type="button" class="icon-btn" id="themeToggle" aria-label="切換深淺色主題" title="切換深淺色主題">◐</button>
+        <a class="btn btn-primary btn-sm" href="https://github.com/kcchien/goshawk-ime/releases/latest/download/GoshawkIME.dmg" data-i18n="downloadMac">下載 Mac 版</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="pill-row">
+            <span class="pill" data-i18n="pillMac">macOS 14+</span>
+            <span class="pill" data-i18n="pillCangjie">倉頡三代 / 五代</span>
+            <span class="pill" data-i18n="pillPrivacy">純離線 · 零追蹤</span>
+            <span class="pill">MIT</span>
+          </div>
+          <h1 data-i18n="heroTitle">倉頡拆碼，英文直打，<br>不再來回切換輸入法。</h1>
+          <p class="hero-lead" data-i18n="heroLead">中文照常按空白鍵打出，英文直接拼按 Tab 補完並自動留空格。花 30 秒在底下完成五個手勢，馬上建立肌肉記憶。</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="#onboarding" data-i18n="ctaStart">開始 30 秒互動練習</a>
+            <a class="btn btn-secondary" href="https://github.com/kcchien/goshawk-ime/releases/latest/download/GoshawkIME.dmg" data-i18n="ctaDownload">下載 GoshawkIME.dmg</a>
+            <a class="btn btn-ghost" href="https://github.com/kcchien/goshawk-ime" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+          </div>
+        </div>
+
+        <div class="hero-preview" aria-hidden="true">
+          <div class="mac-win">
+            <div class="mac-titlebar">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+              <span class="mac-title" data-i18n="heroWindowTitle">工作筆記.rtf</span>
+            </div>
+            <div class="mac-body">
+              <div class="mac-line">下午用 Zoom 開會。</div>
+              <div class="mac-line">會前請用<span class="marked">id</span><span class="caret"></span></div>
+              <div class="goshawk-popover static-popover">
+                <div class="pop-row pop-en">
+                  <span class="pop-en-main">id</span>
+                  <span class="kseq kseq-sm" data-keys="Tab"></span>
+                  <span class="pop-sep">|</span>
+                  <span class="pop-en-alt"><span class="kseq kseq-sm" data-keys="Shift+2"></span> idea</span>
+                  <span class="pop-en-alt"><span class="kseq kseq-sm" data-keys="Shift+3"></span> ideas</span>
+                </div>
+                <div class="pop-divider"></div>
+                <div class="pop-row pop-cj">
+                  <span class="pop-radicals">戈木</span>
+                  <span class="pop-cand is-focused"><span class="focus-tri">▸</span>床</span>
+                </div>
+              </div>
+              <div class="hero-mini-legend">
+                <span class="hero-legend-item"><span class="kseq kseq-sm" data-keys="Space"></span><span>出「床」</span></span>
+                <span class="hero-legend-item"><span class="kseq kseq-sm" data-keys="Tab"></span><span>出 <code>id </code></span></span>
+                <span class="hero-legend-item"><span class="kseq kseq-sm" data-keys="Shift+Space"></span><span data-i18n="legendRevert">立刻互換</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 30-Second Onboarding -->
+    <section id="onboarding" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow" data-i18n="onboardingEyebrow">INTERACTIVE ONBOARDING · 30 SECONDS</span>
+            <h2 data-i18n="onboardingTitle">30 秒建立核心肌肉記憶</h2>
+            <p class="section-desc" data-i18n="onboardingDesc">未安裝可直接用「線上模擬」試打；已安裝可切到「本機蒼鷹」用真實輸入法驗收。</p>
+          </div>
+          <div class="segmented" role="tablist" aria-label="輸入來源模式">
+            <button type="button" class="seg-btn is-active" id="modeSimBtn" role="tab" aria-selected="true" data-mode="sim" data-i18n="modeSim">線上模擬</button>
+            <button type="button" class="seg-btn" id="modeLiveBtn" role="tab" aria-selected="false" data-mode="live" data-i18n="modeLive">本機蒼鷹</button>
+          </div>
+        </div>
+
+        <div class="onboarding-card">
+          <div class="stepper-bar">
+            <div class="step-pills" id="stepPills" role="tablist" aria-label="教學關卡"></div>
+            <div class="progress-wrap" aria-live="polite">
+              <span class="progress-text" id="progressText">0 / 5</span>
+              <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+          </div>
+
+          <div class="mission-body">
+            <div class="mission-info">
+              <div class="mission-meta">
+                <span class="mission-badge" id="missionBadge">第 1 關</span>
+                <span class="mission-time" id="missionTime">約 6 秒</span>
+              </div>
+              <h3 id="missionTitle"></h3>
+              <p id="missionGoal" class="mission-goal"></p>
+
+              <div class="key-guide" id="missionKeys"></div>
+
+              <div class="mission-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnAutoDemo" data-i18n="btnAutoDemo">▶ 自動示範</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="btnResetStep" data-i18n="btnResetStep">重試本關</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="btnNextStep" data-i18n="btnNextStep">下一關</button>
+              </div>
+
+              <div class="chord-assist is-hidden" id="chordAssist">
+                <span class="chord-assist-label" data-i18n="chordAssistLabel">若瀏覽器攔截組合鍵，可直接點下方按鈕開啟面板：</span>
+                <button type="button" class="shortcut-btn" id="btnTriggerReading">
+                  <span class="shortcut-btn-label" data-i18n="btnOpenLookup">開啟注音／拼音查拆碼</span>
+                  <span class="kseq kseq-sm" data-keys="Ctrl+Shift+;"></span>
+                </button>
+                <button type="button" class="shortcut-btn" id="btnTriggerSymbol">
+                  <span class="shortcut-btn-label" data-i18n="btnOpenSymbol">開啟符號面板</span>
+                  <span class="kseq kseq-sm" data-keys="Option+Shift+B"></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="stage-wrap">
+              <div class="mac-win stage-win" id="onboardingWin">
+                <div class="mac-titlebar">
+                  <span class="dot dot-red"></span>
+                  <span class="dot dot-yellow"></span>
+                  <span class="dot dot-green"></span>
+                  <span class="mac-title" id="stageModeLabel">練習區 · 線上模擬</span>
+                  <span class="stage-status" id="stageStatus"></span>
+                </div>
+
+                <div class="editor-stage" id="simStage" tabindex="0" role="textbox" aria-label="互動練習輸入區">
+                  <div class="editor-content" id="simEditorContent"><span class="editor-text" id="simText"></span><span class="marked" id="simMarked"></span><span class="caret" id="simCaret"></span><span class="editor-placeholder" id="simPlaceholder">點這裡，依左側按鍵提示直接輸入⋯</span></div>
+                  <div class="overlay-slot" id="simOverlaySlot"></div>
+                </div>
+
+                <div class="live-stage is-hidden" id="liveStage">
+                  <p class="live-note" id="liveNote" data-i18n="liveNote">請先從右上角 macOS 選單列切換到「蒼鷹輸入法」，再點進下方輸入框直接照關卡實打。</p>
+                  <input type="text" class="live-input" id="liveInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="切到本機蒼鷹後在此打字⋯">
+                  <div class="live-target">
+                    <span data-i18n="liveExpectLabel">預期結果：</span>
+                    <code id="liveExpectValue"></code>
+                  </div>
+                </div>
+
+                <div class="stage-footer">
+                  <span class="engine-feed" id="simFeed">準備就緒。點擊上方區域開始打字。</span>
+                  <span class="target-chip" id="missionTargetChip"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="complete-banner is-hidden" id="completeBanner">
+            <div>
+              <strong data-i18n="completeTitle">30 秒核心手勢全部完成。</strong>
+              <span data-i18n="completeDesc">你已經掌握蒼鷹日常最常用的操作：空白出中文、Tab 出英文、Shift 加空白立刻互換，以及忘記拆碼時用注音或拼音查字。</span>
+            </div>
+            <div class="complete-actions">
+              <a class="btn btn-primary btn-sm" href="https://github.com/kcchien/goshawk-ime/releases/latest/download/GoshawkIME.dmg" data-i18n="downloadMac">下載 Mac 版</a>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnRestartAll" data-i18n="btnRestartAll">再練一次</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Free Playground -->
+    <section id="playground" class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow" data-i18n="playgroundEyebrow">FREE PLAYGROUND</span>
+            <h2 data-i18n="playgroundTitle">自由練習場</h2>
+            <p class="section-desc" data-i18n="playgroundDesc">照右側日常句子試打，體驗中英混打、反引號寫程式碼與八種引號括號。「線上模擬」內建精選常用字；已安裝可切到「本機蒼鷹」任意輸入。</p>
+          </div>
+          <div class="playground-controls">
+            <div class="segmented" role="tablist" aria-label="練習場模式">
+              <button type="button" class="seg-btn is-active" id="pgModeSim" role="tab" aria-selected="true" data-i18n="modeSim">線上模擬</button>
+              <button type="button" class="seg-btn" id="pgModeLive" role="tab" aria-selected="false" data-i18n="modeLive">本機蒼鷹</button>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" id="pgClearBtn" data-i18n="btnClear">清空</button>
+          </div>
+        </div>
+
+        <div class="playground-grid">
+          <div class="mac-win playground-win">
+            <div class="mac-titlebar">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+              <span class="mac-title" id="pgWinTitle">自由練習場 · 線上模擬</span>
+              <span class="pg-badges" id="pgBadges"></span>
+            </div>
+
+            <div class="editor-stage editor-stage-lg" id="pgSimStage" tabindex="0" role="textbox" aria-label="自由練習場輸入區">
+              <div class="editor-content"><span class="editor-text" id="pgText"></span><span class="marked" id="pgMarked"></span><span class="caret" id="pgCaret"></span><span class="editor-placeholder" id="pgPlaceholder">點這裡開始自由混打，或點右側日常句子跟著打⋯</span></div>
+              <div class="overlay-slot" id="pgOverlaySlot"></div>
+            </div>
+
+            <div class="live-stage live-stage-lg is-hidden" id="pgLiveStage">
+              <textarea class="live-textarea" id="pgLiveTextarea" rows="5" placeholder="切換到 Mac 的「蒼鷹輸入法」，在這裡隨意打一段中英混雜的句子試試手感⋯"></textarea>
+            </div>
+
+            <div class="stage-footer">
+              <span class="engine-feed" id="pgFeed">提示：點上方輸入區直接打字，或點右側日常範例跟著試打。</span>
+              <div class="pg-quick-triggers" id="pgTriggers">
+                <button type="button" class="shortcut-btn" id="pgBtnReading">
+                  <span class="shortcut-btn-label" data-i18n="btnOpenLookupShort">注音／拼音查拆碼</span>
+                  <span class="kseq kseq-sm" data-keys="Ctrl+Shift+;"></span>
+                </button>
+                <button type="button" class="shortcut-btn" id="pgBtnSymbol">
+                  <span class="shortcut-btn-label" data-i18n="btnOpenSymbolShort">符號面板</span>
+                  <span class="kseq kseq-sm" data-keys="Option+Shift+B"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <aside class="playground-side">
+            <h3 data-i18n="pgTryTitle">日常句子試打</h3>
+            <p class="side-note" data-i18n="pgTryNote">點任一句即可聚焦輸入區並查看按法提示：</p>
+            <ul class="sample-list" id="pgSamples">
+              <li>
+                <button type="button" class="sample-btn" data-hint="日常約開會：打 bq 空白「用」、Zoom 按 Enter、anmt 空白「開」、omwa 空白「會」，最後按句點自動出全形句號。">
+                  <span class="sample-out">用 Zoom 開會。</span>
+                  <span class="sample-keys"><span class="kseq kseq-sm" data-keys="b,q,Space"></span> · <span class="kseq kseq-sm" data-keys="Zoom,Enter"></span> · <span class="kseq kseq-sm" data-keys="a,n,m,t,Space"></span> · <span class="kseq kseq-sm" data-keys="o,m,w,a,Space,."></span></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="sample-btn" data-hint="英文後接中文全形逗號：打 ym 空白「上」、GitHub 按 Enter、打逗號後立刻按 Shift 加空白。">
+                  <span class="sample-out">上 GitHub，</span>
+                  <span class="sample-keys"><span class="kseq kseq-sm" data-keys="y,m,Space"></span> · <span class="kseq kseq-sm" data-keys="GitHub,Enter,,"></span> · <span class="kseq kseq-sm" data-keys="Shift+Space"></span></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="sample-btn" data-hint="文件中包反引號：打 bq 空白「用」、反引號、id 按 Tab、反引號、dam 空白「查」、再按句點。">
+                  <span class="sample-out">用 `id` 查。</span>
+                  <span class="sample-keys"><span class="kseq kseq-sm" data-keys="b,q,Space"></span> · <span class="kseq kseq-sm" data-keys="`,i,d,Tab,`"></span> · <span class="kseq kseq-sm" data-keys="d,a,m,Space,."></span></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="sample-btn" data-hint="一鍵換方頭括號：按左方括號、打 ci 空白「公」、hgr 空白「告」、按右方括號，立刻按 Shift 加空白再按 6。">
+                  <span class="sample-out">【公告】</span>
+                  <span class="sample-keys"><span class="kseq kseq-sm" data-keys="[,c,i,Space,h,g,r,Space,]"></span> · <span class="kseq kseq-sm" data-keys="Shift+Space,6"></span></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="sample-btn" data-hint="檔名不誤轉中文：打 bq 空白「用」，接著直接打 my.file 按 Enter，句點不會把 my 轉成「下」。">
+                  <span class="sample-out">用 my.file</span>
+                  <span class="sample-keys"><span class="kseq kseq-sm" data-keys="b,q,Space"></span> · <span class="kseq kseq-sm" data-keys="m,y,.,file,Enter"></span></span>
+                </button>
+              </li>
+            </ul>
+
+            <div class="lexicon-card">
+              <h4 data-i18n="pgLexiconTitle">線上模擬內建常用字</h4>
+              <p class="lexicon-list">
+                <code>my</code> 下 · <code>oj</code> 午/什 · <code>bq</code> 用 · <code>anmt</code> 開 · <code>omwa</code> 會 · <code>ym</code> 上 · <code>dam</code> 查 · <code>ci</code> 公 · <code>hgr</code> 告 · <code>ab</code> 明 · <code>a</code> 日 · <code>id</code> 床 · <code>mta</code> 厝 · <code>cta</code> 錯 · <code>l</code> 中 · <code>yk</code> 文 · <code>vnd</code> 好
+              </p>
+              <p class="lexicon-sub" data-i18n="pgLexiconSub">本機蒼鷹完整版收錄超過 14,000 筆倉頡三／五代碼與近萬英文詞彙。</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scannable Task-Oriented Manual (Tabbed by default to eliminate wall-of-text) -->
+    <section id="manual" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow" data-i18n="manualEyebrow">USER GUIDE</span>
+            <h2 data-i18n="manualTitle">重點使用指南</h2>
+            <p class="section-desc" data-i18n="manualDesc">點選下方主題快速查看，每次只呈現最相關的重點。</p>
+          </div>
+        </div>
+
+        <div class="filter-bar" id="manualFilters" role="tablist" aria-label="指南分類">
+          <button type="button" class="filter-pill is-active" data-cat="mixed" data-i18n="catMixed">中英混打</button>
+          <button type="button" class="filter-pill" data-cat="punct" data-i18n="catPunct">標點與引號</button>
+          <button type="button" class="filter-pill" data-cat="code" data-i18n="catCode">寫程式與終端機</button>
+          <button type="button" class="filter-pill" data-cat="lookup" data-i18n="catLookup">查拆碼與符號</button>
+          <button type="button" class="filter-pill" data-cat="setup" data-i18n="catSetup">安裝與隱私</button>
+        </div>
+
+        <div class="manual-grid" id="manualGrid">
+          <!-- Category: mixed -->
+          <article class="guide-card" data-cat="mixed" data-keywords="混打 空白 Tab Enter 英文 中文 空格 數字 選字 Zoom id my oj m120 k8s">
+            <h3 data-i18n="cardMixedTitle">中英直接混打與自動空格</h3>
+            <p class="guide-lead">同一串字母，三個按鍵分流中英文。</p>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">出中文</span>
+                  <span class="kseq kseq-sm" data-keys="Space"></span>
+                </div>
+                <p class="guide-item-desc">有對應漢字時打首選字；還沒湊成字時直接出原字母加空格。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">夾帶英文詞（自動補空格）</span>
+                  <span class="kseq kseq-sm" data-keys="Tab"></span>
+                </div>
+                <p class="guide-item-desc">接受英文建議並補上一格空格，短詞如 <code>id</code> 永遠排第一。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">保留大小寫（不加尾空格）</span>
+                  <span class="kseq kseq-sm" data-keys="Enter"></span>
+                </div>
+                <p class="guide-item-desc">適合 <code>Zoom</code>、<code>macOS</code>、<code>my_id</code>；接著打中文時交界自動補一格。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">數字自動分辨選字或文字</span>
+                </div>
+                <p class="guide-item-desc">只有單一候選直接打數字（<code>m120</code>、<code>k8s</code>）；有重碼且顯示編號時按數字選字。</p>
+              </li>
+            </ul>
+          </article>
+
+          <article class="guide-card" data-cat="mixed" data-keywords="反悔 Shift 空白 對調 換回 修正 錯字">
+            <h3 data-i18n="cardRevertTitle">按錯不用重打：立刻互換</h3>
+            <p class="guide-lead">剛打完發現按錯空白鍵或 Tab，一組鍵立刻挽回。</p>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">中英文立刻互換</span>
+                  <span class="kseq kseq-sm" data-keys="Shift+Space"></span>
+                </div>
+                <div class="guide-example">
+                  <span>打完「下」按</span>
+                  <span class="kseq kseq-sm" data-keys="Shift+Space"></span>
+                  <span>變成</span>
+                  <span class="guide-out">my </span>
+                  <span>，再按換回「下」。</span>
+                </div>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">空格與學習紀錄同步還原</span>
+                </div>
+                <p class="guide-item-desc">結果等同當初直接按另一個鍵，不會留下多餘空格或錯誤學習。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">終端機也能安全互換</span>
+                </div>
+                <p class="guide-item-desc">終端機裡會以底線暫留一個按鍵，打下一個字自動確認，絕不誤刪既有文字。</p>
+              </li>
+            </ul>
+          </article>
+
+          <!-- Category: punct -->
+          <article class="guide-card" data-cat="punct" data-keywords="標點 全形 半形 逗號 句點 Ctrl Option Caps Lock 彎引號">
+            <h3 data-i18n="cardPunctTitle">中英文標點自動判斷與切換</h3>
+            <p class="guide-lead">不用一直盯著全半形狀態，打錯立刻換最順手。</p>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">依前字自動選全半形</span>
+                </div>
+                <p class="guide-item-desc">中文後出「，。」；英文、行首、檔名 <code>my.file</code> 與直引號 <code>' "</code> 出半形。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">打完立刻換全半形</span>
+                  <span class="kseq kseq-sm" data-keys="Shift+Space"></span>
+                </div>
+                <div class="guide-example">
+                  <span><code>GitHub,</code> 後按</span>
+                  <span class="kseq kseq-sm" data-keys="Shift+Space"></span>
+                  <span>變成</span>
+                  <span class="guide-out">GitHub，</span>
+                </div>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">事先強制全形或半形</span>
+                </div>
+                <p class="guide-item-desc">按住 <span class="kseq kseq-sm" data-keys="Ctrl"></span> 強制全形；按住 <span class="kseq kseq-sm" data-keys="Option"></span> 單次半形；<span class="kseq kseq-sm" data-keys="Option+Shift+H"></span> 切換全段半形。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">彎引號看引號外面的中英文</span>
+                </div>
+                <p class="guide-item-desc"><code>他說“AI”</code> 後出「。」，<code>He said “hello”</code> 後出半形 <code>.</code>。</p>
+              </li>
+            </ul>
+          </article>
+
+          <article class="guide-card" data-cat="punct" data-keywords="成對 括號 方括號 書名號 引號 八種 Shift 空白 數字 1-8">
+            <h3 data-i18n="cardPairTitle">方括號打出八種常用引號與括號</h3>
+            <p class="guide-lead">結尾 <span class="kseq kseq-sm" data-keys="]"></span> 自動配成最近一個開頭的同一種。</p>
+            <div class="pair-table">
+              <span><b>1</b> 「」</span><span><b>2</b> [ ]</span><span><b>3</b> 『』</span><span><b>4</b> 《》</span>
+              <span><b>5</b> 〈〉</span><span><b>6</b> 【】</span><span><b>7</b> “”</span><span><b>8</b> ‘’</span>
+            </div>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">打完整對一起換</span>
+                  <span class="kseq kseq-sm" data-keys="Shift+Space,4"></span>
+                </div>
+                <div class="guide-example">
+                  <span>打完「明日」立刻換成</span>
+                  <span class="guide-out">《明日》</span>
+                  <span>（按 <span class="kseq kseq-sm" data-keys="6"></span> 變【明日】）</span>
+                </div>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">開頭先選種類（長句與終端機用）</span>
+                </div>
+                <p class="guide-item-desc">按 <span class="kseq kseq-sm" data-keys="["></span> 後先按 <span class="kseq kseq-sm" data-keys="Shift+Space"></span> 選開頭，打完按 <span class="kseq kseq-sm" data-keys="]"></span> 自動配對。強制半形右括號按 <span class="kseq kseq-sm" data-keys="Option+]"></span>。</p>
+              </li>
+            </ul>
+          </article>
+
+          <!-- Category: code -->
+          <article class="guide-card" data-cat="code" data-keywords="反引號 程式碼 片段 backtick markdown 檔名">
+            <h3 data-i18n="cardSnippetTitle">用反引號寫指令與程式碼</h3>
+            <p class="guide-lead">寫文件夾雜變數與指令，不必手動切英文。</p>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">打一個反引號立即英文優先</span>
+                  <span class="kseq kseq-sm" data-keys="`"></span>
+                </div>
+                <p class="guide-item-desc">浮窗標出 <strong>片段</strong>，按 <span class="kseq kseq-sm" data-keys="Space"></span> 留英文、標點全部半形、不補中英空格。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">補完英文不加多餘空格</span>
+                  <span class="kseq kseq-sm" data-keys="Tab"></span>
+                </div>
+                <p class="guide-item-desc">結尾反引號緊貼字尾，例如 <code>`order_id`</code>。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">收尾自動回中文習慣</span>
+                </div>
+                <p class="guide-item-desc">再打一個 <span class="kseq kseq-sm" data-keys="`"></span> 結束，下一個標點沿用進入前的中文或英文習慣。</p>
+              </li>
+            </ul>
+          </article>
+
+          <article class="guide-card" data-cat="code" data-keywords="終端機 Ghostty Herdr iTerm VS Code Terminal Tab Ctrl 差異">
+            <h3 data-i18n="cardTerminalTitle">終端機相容速查</h3>
+            <p class="guide-lead">部分終端機會自行攔截特定組合鍵，照以下替代最順手。</p>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">Herdr 攔截 Tab</span>
+                  <span class="kseq kseq-sm" data-keys="Enter"></span>
+                </div>
+                <p class="guide-item-desc">想保留打好的英文，改按 Enter 送出。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">Ghostty / Herdr 打全形標點</span>
+                  <span class="kseq kseq-sm" data-keys="Shift+Space"></span>
+                </div>
+                <p class="guide-item-desc">先打半形標點，立刻按 Shift 加空白換成全形。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">終端機裡打指令或引號</span>
+                </div>
+                <p class="guide-item-desc">單字母誤出中文立刻互換，或先開 <span class="kseq kseq-sm" data-keys="CapsLock"></span>；換引號種類請在開頭 <span class="kseq kseq-sm" data-keys="["></span> 先選。</p>
+              </li>
+            </ul>
+          </article>
+
+          <!-- Category: lookup -->
+          <article class="guide-card" data-cat="lookup" data-keywords="讀音 反查 注音 拼音 忘字 拆碼 Ctrl Shift ; 厝">
+            <h3 data-i18n="cardReadingTitle">忘了倉頡怎麼拆？用注音或拼音查字</h3>
+            <p class="guide-lead">就地查碼、看字根，不中斷原本打字進度。</p>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">開啟查拆碼面板</span>
+                  <span class="kseq kseq-sm" data-keys="Ctrl+Shift+;"></span>
+                </div>
+                <p class="guide-item-desc">原本正在打的字母會完整留著，按 <span class="kseq kseq-sm" data-keys="Esc"></span> 隨時退回。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">切換注音與漢語拼音</span>
+                  <span class="kseq kseq-sm" data-keys="Tab"></span>
+                </div>
+                <p class="guide-item-desc">支援標準大千注音（如 <code>hji4</code> 查 <code>ㄘㄨㄛˋ</code>）與拼音（<code>cuo4</code>）。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">列出三代／五代拆碼並直接選字</span>
+                </div>
+                <p class="guide-item-desc">同時顯示字母碼與字根（如「厝」<code>mta 一廿日</code>），按數字鍵直接輸入。</p>
+              </li>
+            </ul>
+          </article>
+
+          <article class="guide-card" data-cat="lookup" data-keywords="符號面板 Option Shift B 標點 最近使用 刪節號 破折號 箭頭">
+            <h3 data-i18n="cardSymbolTitle">符號面板（151 個標準標點與符號）</h3>
+            <p class="guide-lead">和 macOS 內建倉頡同一組開關鍵，完全無縫銜接。</p>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">開啟符號面板</span>
+                  <span class="kseq kseq-sm" data-keys="Option+Shift+B"></span>
+                </div>
+                <p class="guide-item-desc">收錄「最近使用」「標點」「符號」三分頁，按 <span class="kseq kseq-sm" data-keys="Tab"></span> 切換。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">數字直選，常用往前排</span>
+                  <span class="kseq kseq-sm" data-keys="1,9"></span>
+                </div>
+                <p class="guide-item-desc">按 1 至 9 直接輸入，<span class="kseq kseq-sm" data-keys="ArrowLeft,ArrowRight"></span> 翻頁；選過的符號會排進最前面。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">標點含全形與半形原樣輸入</span>
+                </div>
+                <p class="guide-item-desc">依教育部《重訂標點符號手冊》排列，選半形不會被改回全形。</p>
+              </li>
+            </ul>
+          </article>
+
+          <!-- Category: setup -->
+          <article class="guide-card" data-cat="setup" data-keywords="安裝 升級 移除 登出 登入 dmg 腳本 系統設定">
+            <h3 data-i18n="cardInstallTitle">安裝、升級與移除</h3>
+            <p class="guide-lead">支援 macOS 14+（Apple Silicon 與 Intel），經 Apple 公證。</p>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">三步安裝完成</span>
+                </div>
+                <p class="guide-item-desc">打開 <code>GoshawkIME.dmg</code> → 點兩下安裝 → 右上角選單列切到「蒼鷹輸入法」。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">找不到或升級異常</span>
+                </div>
+                <p class="guide-item-desc">在「系統設定 → 鍵盤 → 文字輸入 → 繁體中文」加入；覆蓋升級後若行為異常，登出再登入即可。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">一行指令乾淨移除</span>
+                </div>
+                <p class="guide-item-desc"><code>~/Library/Input\ Methods/GoshawkIME.app/Contents/MacOS/GoshawkApp --uninstall</code></p>
+              </li>
+            </ul>
+          </article>
+
+          <article class="guide-card" data-cat="setup" data-keywords="設定 隱私 學習 倉頡三代 五代 更新 網路 離線">
+            <h3 data-i18n="cardPrivacyTitle">設定與隱私承諾</h3>
+            <p class="guide-lead">打字內容絕不離開這台 Mac。</p>
+            <ul class="guide-list">
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">倉頡代別、字級與速查即時調整</span>
+                </div>
+                <p class="guide-item-desc">預設倉頡三代，從選單列點「設定…」隨時切換五代、浮窗字體大小（小／標準／大）、查看快捷鍵速查或複製零隱私風險的診斷資訊。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">全本機運算與學習</span>
+                </div>
+                <p class="guide-item-desc">拆碼、英文建議、查拆碼與三類學習紀錄全部存本機，可單獨關閉或一鍵清除。</p>
+              </li>
+              <li class="guide-item">
+                <div class="guide-item-head">
+                  <span class="guide-item-title">唯一可關閉的更新檢查</span>
+                </div>
+                <p class="guide-item-desc">每天最多向 GitHub 查一次公開版號，不含任何輸入資料，可在設定「關於」關閉。</p>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Single-page Cheat Sheet -->
+    <section id="cheatsheet" class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow" data-i18n="cheatEyebrow">QUICK REFERENCE</span>
+            <h2 data-i18n="cheatTitle">單頁快捷鍵速查表</h2>
+            <p class="section-desc" data-i18n="cheatDesc">把這張表記住，就能流暢駕馭蒼鷹全部功能。</p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm no-print" id="printCheatBtn" data-i18n="btnPrint">列印速查表</button>
+        </div>
+
+        <div class="cheat-grid">
+          <div class="cheat-table-wrap">
+            <table class="cheat-table">
+              <thead>
+                <tr><th data-i18n="thKey">按鍵</th><th data-i18n="thAction">作用</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="kseq" data-keys="Space"></span></td><td data-i18n="ckSpace">打出倉頡首選字（反引號裡優先出英文）</td></tr>
+                <tr><td><span class="kseq" data-keys="Tab"></span></td><td data-i18n="ckTab">接受英文建議並補一格空格（反引號裡不加空格）</td></tr>
+                <tr><td><span class="kseq" data-keys="Enter"></span></td><td data-i18n="ckEnter">保留原本大小寫打出字母，字尾不加空格</td></tr>
+                <tr><td><span class="kseq" data-keys="Shift+Space"></span></td><td data-i18n="ckShiftSpace">打完立刻互換中英文、標點全半形或八種引號括號；打字中展開候選列</td></tr>
+                <tr><td><span class="kseq" data-keys="Shift,Shift"></span></td><td data-i18n="ckDoubleShift">連按兩下切換純英文模式，再連按兩下回到混打</td></tr>
+                <tr><td><span class="kseq" data-keys="CapsLock"></span></td><td data-i18n="ckCaps">亮燈期間直出小寫英數與半形標點（加 Shift 出大寫）</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="cheat-table-wrap">
+            <table class="cheat-table">
+              <thead>
+                <tr><th data-i18n="thKey">按鍵</th><th data-i18n="thAction">作用</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="kseq" data-keys="[,]"></span></td><td data-i18n="ckBrackets">打出八種成對引號括號；結尾自動配對，緊接 Shift 加空白與數字 1 至 8 換種類</td></tr>
+                <tr><td><span class="kseq" data-keys="`,`"></span></td><td data-i18n="ckBacktick">用反引號寫程式與指令：優先出英文、標點半形、不自動補空格</td></tr>
+                <tr><td><span class="kseq" data-keys="Ctrl+,"></span> <span class="kseq" data-keys="Ctrl+."></span></td><td data-i18n="ckCtrlPunct">按住 Ctrl 加標點，單次強制輸出全形標點（支援 , . \ ; ! ? ( )）</td></tr>
+                <tr><td><span class="kseq" data-keys="Option+."></span> <span class="kseq" data-keys="Option+]"></span></td><td data-i18n="ckOptPunct">按住 Option 加標點，單次強制輸出半形標點</td></tr>
+                <tr><td><span class="kseq" data-keys="Option+Shift+H"></span></td><td data-i18n="ckHalfPunct">切換「使用半形標點符號」</td></tr>
+                <tr><td><span class="kseq" data-keys="Ctrl+Shift+;"></span></td><td data-i18n="ckReading">忘了倉頡怎麼拆？開啟注音／拼音查拆碼</td></tr>
+                <tr><td><span class="kseq" data-keys="Option+Shift+B"></span></td><td data-i18n="ckSymbol">開啟符號面板（最近使用、標點、符號三分頁）</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AEO FAQ Section -->
+    <section id="faq" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow" data-i18n="faqEyebrow">FAQ · 常見問答</span>
+            <h2 data-i18n="faqTitle">常見問題與解答</h2>
+            <p class="section-desc" data-i18n="faqDesc">針對倉頡使用者最常問的系統支援、學習門檻、隱私安全與終端機相容性，一次回答清楚。</p>
+          </div>
+        </div>
+
+        <div class="faq-grid">
+          <article class="faq-card">
+            <h3>macOS 上有不用一直切換輸入法就能中英混打的倉頡輸入法嗎？</h3>
+            <p>有。蒼鷹輸入法（Goshawk IME）專為 macOS 14 以上版本設計，讓倉頡拆碼與英文共用同一組鍵盤：按 <span class="kseq kseq-sm" data-keys="Space"></span> 打中文、按 <span class="kseq kseq-sm" data-keys="Tab"></span> 接英文並自動補空格、按 <span class="kseq kseq-sm" data-keys="Enter"></span> 保留 <code>Zoom</code>、<code>macOS</code> 原樣大小寫，寫中英混雜的文字不必來回切換。</p>
+          </article>
+
+          <article class="faq-card">
+            <h3>蒼鷹支援倉頡三代還是倉頡五代？需要哪一版 macOS？</h3>
+            <p>兩代都支援。預設為倉頡三代，隨時可從選單列的「設定…」即時切換成倉頡五代。安裝檔為單一通用執行檔，支援 macOS 14 或以上版本的 Apple Silicon 與 Intel Mac，皆通過 Apple Developer ID 簽章與公證。</p>
+          </article>
+
+          <article class="faq-card">
+            <h3>從 macOS 內建倉頡換到蒼鷹需要重新學拆碼嗎？</h3>
+            <p>不需要。拆碼規則與按空白鍵送字的習慣和原本完全相同，符號面板也沿用內建倉頡的 <span class="kseq kseq-sm" data-keys="Option+Shift+B"></span>。差別只在夾帶英文改按 <span class="kseq kseq-sm" data-keys="Tab"></span> 或 <span class="kseq kseq-sm" data-keys="Enter"></span>，按錯也能立刻用 <span class="kseq kseq-sm" data-keys="Shift+Space"></span> 互換，約 30 秒就能適應。</p>
+          </article>
+
+          <article class="faq-card">
+            <h3>蒼鷹輸入法安全嗎？會把打字內容上傳到雲端嗎？</h3>
+            <p>打字內容絕不會離開你的 Mac。拆碼、英文預測、注音／拼音查拆碼與個人選字學習全部在本機離線運作，且採 MIT 開源授權。唯一可選的網路連線是「自動檢查更新」，每天最多向 GitHub 查詢一次最新公開版號，不含任何輸入資料或識別資訊，並可在「設定 → 關於」關閉。</p>
+          </article>
+
+          <article class="faq-card">
+            <h3>打倉頡臨時忘了某個字怎麼拆，在蒼鷹裡怎麼查？</h3>
+            <p>原地按下 <span class="kseq kseq-sm" data-keys="Ctrl+Shift+;"></span> 即可開啟查拆碼面板（原本正在打的字母會完整保留），直接用標準大千注音或按 <span class="kseq kseq-sm" data-keys="Tab"></span> 切換漢語拼音輸入讀音，面板會列出同音字與目前代別的字母碼和字根，可直接選字或看完拆碼按 <span class="kseq kseq-sm" data-keys="Esc"></span> 回到原本位置。</p>
+          </article>
+
+          <article class="faq-card">
+            <h3>在 VS Code、Ghostty、Herdr 或終端機裡使用蒼鷹正常嗎？</h3>
+            <p>正常。輸入檔名如 <code>my.file</code> 或 <code>cd ..</code> 時句點不會誤轉全形，反引號 <span class="kseq kseq-sm" data-keys="`"></span> 裡會自動改為英文優先且不補多餘空格。若使用會攔截 Tab 的終端機（如 Herdr）改按 <span class="kseq kseq-sm" data-keys="Enter"></span> 送出英文；在 Ghostty 或 Herdr 打全形標點則先打半形再按 <span class="kseq kseq-sm" data-keys="Shift+Space"></span> 切換即可。</p>
+          </article>
+
+          <article class="faq-card faq-card-wide">
+            <h3>如何安裝、覆蓋升級或完全移除蒼鷹輸入法？</h3>
+            <p>下載最新版 <a href="https://github.com/kcchien/goshawk-ime/releases/latest/download/GoshawkIME.dmg">GoshawkIME.dmg</a>，點兩下裡面的 <strong>GoshawkIME</strong> 按「安裝」，再從右上角選單列切換到「蒼鷹輸入法」即可；也可以執行一行終端機指令自動驗證簽章安裝。覆蓋升級會保留所有設定與學習紀錄，若升級後仍看到舊版行為，登出 macOS 再重新登入即可。移除請執行 <code>~/Library/Input\ Methods/GoshawkIME.app/Contents/MacOS/GoshawkApp --uninstall</code>。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="./assets/goshawk.svg" width="24" height="24" alt="">
+        <span data-i18n="footerTag">蒼鷹輸入法（Goshawk IME）· MIT 開源授權 · 本頁面零追蹤、可完全離線開啟</span>
+      </div>
+      <div class="footer-links">
+        <a href="./llms.txt" target="_blank" rel="noopener noreferrer">llms.txt</a>
+        <a href="./guide.md" target="_blank" rel="noopener noreferrer">Markdown</a>
+        <a href="https://github.com/kcchien/goshawk-ime" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/kcchien/goshawk-ime/releases/latest" target="_blank" rel="noopener noreferrer" data-i18n="footerReleases">發行版本</a>
+        <a href="https://github.com/kcchien/goshawk-ime/issues/new/choose" target="_blank" rel="noopener noreferrer" data-i18n="footerIssues">回報問題</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

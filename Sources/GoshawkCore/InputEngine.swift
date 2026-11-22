@@ -6,12 +6,24 @@ public struct InputEngine: Sendable {
     public private(set) var selectedCandidateIndex: Int = 0
     public private(set) var selectedEnglishIndex: Int = 0
     public private(set) var documentText: String = ""
+    /// 鏡像的開頭之前還有沒有看不到的前文：宿主的前文被裁成視窗長度，或鏡像自己超過上限被裁過。
+    /// 右方括號掃到鏡像開頭都找不到開頭時靠它分辨：false 是確定沒有開頭，true 是不知道。
+    public private(set) var mirrorIsClipped: Bool = false
     public private(set) var pendingAutoSpace: Bool = false
     /// Caps Lock 亮燈。與 `state` 各自獨立，熄燈後回到原本的混打、純中文或純英文。
     public private(set) var capsLockEnabled: Bool = false
-    /// 單字讀音反查。不是 nil 時所有按鍵都交給反查處理，上面那些欄位一律不動，
-    /// 所以取消只要把它設回 nil。
-    public private(set) var readingLookup: ReadingLookup?
+    /// 疊加層：單字讀音反查或符號面板。不是 nil 時所有按鍵都交給那一層處理，
+    /// 上面那些欄位一律不動，所以取消只要把它設回 nil。
+    public private(set) var layer: InputLayer?
+    public var readingLookup: ReadingLookup? {
+        if case .readingLookup(let lookup) = layer { return lookup }
+        return nil
+    }
+    public var symbolPanel: SymbolPanel? {
+        if case .symbolPanel(let panel) = layer { return panel }
+        return nil
+    }
+    public private(set) var chineseContinuation: String?
     /// 上一個按鍵是一次可反悔的送出時才有值。下一個按鍵不論是什麼都先清掉它，
     /// 只有 Shift+空白 會拿它來對調。
     public private(set) var revertRecord: RevertRecord?
@@ -25,6 +37,11 @@ public struct InputEngine: Sendable {
             if usageHistory != oldValue {
                 revertRecord = nil
             }
+            // 面板開著時外層換了紀錄（清除學習紀錄）：「最近使用」可能變短，焦點不能留在清單外。
+            if case .symbolPanel(var panel) = layer {
+                panel.focusIndex = max(0, min(panel.focusIndex, symbolPanelEntries().count - 1))
+                layer = .symbolPanel(panel)
+            }
         }
     }
 
@@ -32,6 +49,7 @@ public struct InputEngine: Sendable {
         didSet {
             if oldValue != configuration {
                 revertRecord = nil
+                chineseContinuation = nil
             }
             if !configuration.mixedModeEnabled {
                 // 純中文模式沒有片段語境；切回混打時要重新打一個反引號才算。
@@ -91,23 +109,97 @@ public struct InputEngine: Sendable {
         self.english = english
         self.readingsOverride = readings
         self.documentText = initialDocumentText
+        _ = trimDocumentMirror()
     }
 
     /// Number of characters before the cursor worth asking the client for.
     public static let contextWindowLength = 32
 
+    /// 成對切換一次最多換掉幾個字元（含開頭與結尾）。與前文視窗同長：鏡像被宿主的前文換掉後
+    /// 本來就只剩這麼多。設成 0 就關掉成對切換，配到開頭的結尾一律換不了，其餘照常。
+    public static let pairSwitchSpanLimit = contextWindowLength
+
+    /// 前文鏡像最多留幾個字元（`Character`）。同一個欄位連續打字時鏡像只增不減，
+    /// 每次送出與反悔快照都跟著持有整份，所以超過就只留尾端。引擎往回看的範圍遠小於它：
+    /// 自動空格與標點寬度看最後幾個字元，成對切換一次最多換 `pairSwitchSpanLimit` 個。
+    /// 看得到的差別是右方括號不再跟隨比這更早的開頭；那時照語境得到的全形結尾也不能對調寬度
+    /// （`mirrorIsClipped`）。
+    public static let documentMirrorLimit = 8192
+
+    /// 鏡像超過上限時裁掉開頭，回傳有沒有裁。只從字素邊界切，留下的位元組原封不動。
+    /// 反悔快照裡的文件跟著裁掉同一段：反悔靠新舊文件的共同前綴算出回刪後要接上的文字，
+    /// 只裁一邊就對不上，回刪數也會把被裁掉的長度算進去。
+    private mutating func trimDocumentMirror() -> Bool {
+        // 一個字元至少一個位元組，位元組數沒超過就不必數字元，這時只付這一次比較。
+        // 位元組數超過之後每次都要從尾端往回數字元：一個漢字三個位元組，所以中文文件
+        // 大約從 2,731 個字起就要數，還沒到上限時會數完整份鏡像，成本隨長度上升到上限為止。
+        guard documentText.utf8.count > Self.documentMirrorLimit,
+              let cut = documentText.index(documentText.endIndex, offsetBy: -Self.documentMirrorLimit,
+                                           limitedBy: documentText.startIndex),
+              cut > documentText.startIndex else {
+            return false
+        }
+        let dropped = documentText[..<cut]
+        if let snapshotDocument = revertRecord?.snapshot.documentText {
+            let bytes = snapshotDocument.utf8
+            if bytes.starts(with: dropped.utf8),
+               let end = String.Index(bytes.index(bytes.startIndex, offsetBy: dropped.utf8.count),
+                                      within: snapshotDocument) {
+                revertRecord?.snapshot.documentText = String(snapshotDocument[end...])
+            } else {
+                // 快照的開頭不是被裁掉的那一段，沒辦法讓兩邊對齊：寧可不能反悔，也不回刪錯的字。
+                revertRecord = nil
+            }
+        }
+        documentText = String(documentText[cut...])
+        mirrorIsClipped = true
+        return true
+    }
+
+    /// 這個按鍵現在會不會被當成反悔。外層要先讀回確認文字時用它判斷，不自己再判一次。
+    public func isRevertInput(_ input: KeyInput) -> Bool {
+        guard let revertRecord else { return false }
+        return input == .shiftSpace || Self.pickedPairStyle(input, record: revertRecord) != nil
+    }
+
+    /// 這個按鍵是不是數字直選，是的話選的是哪一種。只在結尾側、緊接一次 Shift+空白 切換時成立：
+    /// 開頭側的數字是括號裡的內容，選完之後的數字也是內容，所以最多只吃掉一個數字。
+    private static func pickedPairStyle(_ input: KeyInput, record: RevertRecord) -> PairStyle? {
+        guard case .pair(let pair) = record.kind, pair.side == .closer, pair.step == .cycled,
+              case .character(let ch) = input, let number = ch.wholeNumberValue, ch.isASCII,
+              PairStyle.allCases.indices.contains(number - 1) else {
+            return nil
+        }
+        return PairStyle.allCases[number - 1]
+    }
+
     /// Reconciles the internal mirror with the text the client reports before the cursor.
     /// When they disagree (cursor moved, paste, foreign edit) the client wins.
-    public mutating func syncExternalContext(_ leadingContext: String?) {
+    /// `isClipped` 由外層說明這段前文是不是沒讀到文件開頭；比視窗長的前文不必說，這裡自己會裁。
+    public mutating func syncExternalContext(_ leadingContext: String?, isClipped: Bool = false) {
         guard buffer.isEmpty, let ext = leadingContext else {
             return
         }
         let clipped = String(ext.suffix(Self.contextWindowLength))
-        let agrees = clipped.isEmpty ? documentText.isEmpty : documentText.hasSuffix(clipped)
+        let contextIsClipped = isClipped || ext.count > clipped.count
+        // 宿主給的是整份游標前的文件時，鏡像必須與它完全相等：比它長的鏡像即使尾端相符也是過期的
+        // （不經過按鍵的編輯或游標移動）。前文被裁過時只比得了尾端，鏡像多出來的是更早的文字。
+        let agrees: Bool
+        if !contextIsClipped {
+            agrees = documentText == clipped
+        } else {
+            agrees = clipped.isEmpty ? documentText.isEmpty : documentText.hasSuffix(clipped)
+        }
+        // 鏡像就是宿主給的這一段時，更早的前文看不看得到由宿主說了算。鏡像比它長而且相符時，
+        // 原本的判斷不變。比位元組數是因為它不必走完整份鏡像。
+        if !agrees || documentText.utf8.count == clipped.utf8.count {
+            mirrorIsClipped = contextIsClipped
+        }
         if agrees {
             return
         }
         documentText = clipped
+        chineseContinuation = nil
         pendingAutoSpace = false
         // 游標前已經不是剛送出的那段文字，沒有東西可以對調。
         revertRecord = nil
@@ -129,23 +221,44 @@ public struct InputEngine: Sendable {
         revertRecord = nil
     }
 
+    public mutating func dismissChineseContinuation() {
+        chineseContinuation = nil
+    }
+
     /// 宿主結束組字時呼叫。之後游標可能已經不在那個反引號後面，片段語境到此結束。
     public mutating func endSnippetContext() {
         snippet = .none
     }
 
     public mutating func resetContext() {
+        chineseContinuation = nil
         revertRecord = nil
-        readingLookup = nil
+        layer = nil
         snippet = .none
         clearComposingToIdleKeepingMode()
         documentText = ""
+        mirrorIsClipped = false
         pendingAutoSpace = false
     }
 
-    /// 宿主或選單要結束組字時先呼叫它，原組字才不會被反查的選字取代。
-    public mutating func dismissReadingLookup() {
-        readingLookup = nil
+    /// 宿主或選單要結束組字時先呼叫它，原組字才不會被疊加層的選取取代。
+    public mutating func dismissLayer() {
+        layer = nil
+    }
+
+    /// 宿主結束組字時，疊加層底下的候選焦點只是暫存，原字母要留在舊欄位，
+    /// 面板上的焦點列也不送出。
+    public mutating func finishHostComposition() -> String? {
+        let wasLayered = layer != nil
+        layer = nil
+        revertRecord = nil
+        guard !buffer.isEmpty else { return nil }
+        // 這裡不經過 `handle`，送出原字母之後自己裁一次。
+        defer { _ = trimDocumentMirror() }
+        if !wasLayered { return handleEnter().committedText }
+        let text = commitRawBuffer(appendTrailingSpace: false).full
+        clearComposingToIdle()
+        return text
     }
 
     public var currentOverlay: OverlayState? {
@@ -215,7 +328,10 @@ public struct InputEngine: Sendable {
         case .none, .justClosed:
             let before = documentText.dropLast()
             snippet = .inside(SnippetContext.Inside(
-                characterBefore: before.last(where: { $0 != " " && $0 != "`" })
+                characterBefore: PunctuationMapper.contextCharacter(
+                    before: before,
+                    ignoring: { $0 == " " || $0 == "`" }
+                )
             ))
         }
     }
@@ -245,11 +361,15 @@ public struct InputEngine: Sendable {
 
     /// 反查面板要畫的內容。未開啟時為 nil。候選與分頁都在這裡算完，外層不再查索引。
     public var currentReadingLookupPanel: ReadingLookupPanel? {
+        readingLookupPanel(candidates: nil)
+    }
+
+    private func readingLookupPanel(candidates prepared: [ReadingCandidate]?) -> ReadingLookupPanel? {
         guard let lookup = readingLookup else { return nil }
 
         let status: ReadingLookupPanel.Status
         // 候選只從 `readingLookupCandidates()` 來，面板與選字才會是同一份順序。
-        let candidates = readingLookupCandidates()
+        let candidates = prepared ?? readingLookupCandidates()
         switch readings.interpret(lookup.keys, scheme: lookup.scheme) {
         case .empty:
             status = .empty
@@ -265,12 +385,16 @@ public struct InputEngine: Sendable {
         let pageCount = max(1, (candidates.count + perPage - 1) / perPage)
         let pageIndex = min(lookup.pageIndex, pageCount - 1)
         let rows = candidates.dropFirst(pageIndex * perPage).prefix(perPage).enumerated().map { offset, candidate in
-            let code = candidate.nativeCodes.first
+            let availableCode = candidate.nativeCodes.first {
+                cangjie.candidates(for: $0).contains(candidate.character)
+            }
+            let code = availableCode ?? candidate.nativeCodes.first
             return ReadingLookupPanel.Row(
                 number: offset + 1,
                 character: candidate.character,
                 code: code,
-                radicals: code.map { cangjie.radicals(for: $0) }
+                radicals: code.map { cangjie.radicals(for: $0) },
+                directInputAvailable: code.map { _ in availableCode != nil }
             )
         }
         let focusedRow = rows.isEmpty ? nil : lookup.focusIndex - pageIndex * perPage
@@ -288,18 +412,79 @@ public struct InputEngine: Sendable {
         )
     }
 
+    /// 符號面板目前分頁的完整清單。面板、選取與翻頁都看這一份。
+    public func symbolPanelEntries() -> [SymbolTable.Entry] {
+        guard let panel = symbolPanel else { return [] }
+        switch panel.tab {
+        case .recent:
+            return SymbolTable.shared.recentEntries(history: usageHistory.symbols)
+        case .punctuation, .symbols:
+            return SymbolTable.shared.entries(in: panel.tab)
+        }
+    }
+
+    /// 符號面板要畫的內容。未開啟時為 nil。
+    public var currentSymbolPanelContent: SymbolPanelContent? {
+        guard let panel = symbolPanel else { return nil }
+        let entries = symbolPanelEntries()
+        let perPage = SymbolPanel.rowsPerPage
+        let pageCount = max(1, (entries.count + perPage - 1) / perPage)
+        let pageIndex = min(panel.pageIndex, pageCount - 1)
+        let rows = entries.dropFirst(pageIndex * perPage).prefix(perPage).enumerated().map { offset, entry in
+            SymbolPanelContent.Row(
+                number: offset + 1,
+                symbol: entry.symbol,
+                name: entry.name,
+                englishName: entry.englishName,
+                group: entry.group,
+                englishGroup: entry.englishGroup
+            )
+        }
+        return SymbolPanelContent(
+            tab: panel.tab,
+            rows: rows,
+            focusedRow: rows.isEmpty ? nil : panel.focusIndex - pageIndex * perPage,
+            page: pageIndex + 1,
+            pageCount: pageCount
+        )
+    }
+
     @discardableResult
     public mutating func handle(_ input: KeyInput) -> StepEffect {
         // 反悔紀錄只活一個按鍵：不論這個按鍵是什麼，舊紀錄都到此為止。
         let record = revertRecord
         revertRecord = nil
-        let snippetBefore = snippet
-        if input == .shiftSpace, let record, let reverted = revert(record) {
-            // 反悔會把片段語境一起倒回去，失效的判斷已經在 revert 裡用送出前的語境做過。
-            return reverted
+        let offered = chineseContinuation
+        chineseContinuation = nil
+        if let offered {
+            if input == .acceptChineseContinuation {
+                let emitted = emitText(core: offered, outgoing: .chinese, appendTrailingSpace: false)
+                var accepted = makeEffect(committedText: emitted.full, committedCore: emitted.core,
+                                          commitKind: .chinese, deletedBackwardCount: 0, handled: true)
+                // 這條路徑提早結束，走不到底下那一次裁剪，所以自己裁。
+                if trimDocumentMirror() { accepted.documentText = documentText }
+                return accepted
+            }
+            if input == .escape { return swallowEffect() }
         }
-        let effect = commitTrackRevertibly(input) ?? commitPunctuationRevertibly(input) ?? dispatch(input)
-        expireJustClosedSnippet(before: snippetBefore, committedText: effect.committedText)
+        let snippetBefore = snippet
+        var effect: StepEffect
+        let picked = record.flatMap { Self.pickedPairStyle(input, record: $0) }
+        if let record, input == .shiftSpace || picked != nil, let reverted = revert(record, picked: picked) {
+            effect = reverted
+        } else {
+            effect = commitTrackRevertibly(input) ?? commitPunctuationRevertibly(input) ?? dispatch(input)
+            expireJustClosedSnippet(before: snippetBefore, committedText: effect.committedText)
+        }
+        // 鏡像只在送出文字時變長，其餘按鍵不必檢查：鏡像的位元組數超過上限之後，每檢查一次都要往回數字元。
+        // 效果裡的文件必須就是按鍵後的鏡像，所以裁過就一起換掉。
+        if effect.committedText != nil, trimDocumentMirror() {
+            effect.documentText = documentText
+        }
+        if configuration.chineseContinuationEnabled, effect.commitKind == .chinese,
+           state == .idle, !isLiteralLayer, !inSnippet {
+            chineseContinuation = ChineseContinuation.suggestion(after: documentText)
+        }
         return effect
     }
 
@@ -336,11 +521,19 @@ public struct InputEngine: Sendable {
         newDocument: String,
         deletedBackwardCount: Int
     ) -> String? {
-        let keptCount = oldDocument.count - deletedBackwardCount
-        guard keptCount >= 0 else { return nil }
-        let kept = oldDocument.prefix(keptCount)
+        guard let cut = oldDocument.index(oldDocument.endIndex, offsetBy: -deletedBackwardCount,
+                                          limitedBy: oldDocument.startIndex) else { return nil }
+        let kept = oldDocument[..<cut]
+        // 兩份文件來自同一張快照。從 UTF-8 位移取出共同前綴，再核對文字，
+        // 可以保留完整文件而不用從頭逐字數到游標。
+        if let byteEnd = newDocument.utf8.index(newDocument.utf8.startIndex, offsetBy: kept.utf8.count,
+                                                limitedBy: newDocument.utf8.endIndex),
+           let end = String.Index(byteEnd, within: newDocument), newDocument[..<end] == kept {
+            return String(newDocument[end...])
+        }
+        // Unicode 正規等價的前綴可能使用不同的位元組數。
         guard newDocument.hasPrefix(kept) else { return nil }
-        return String(newDocument.dropFirst(keptCount))
+        return String(newDocument.dropFirst(kept.count))
     }
 
     /// 剛關上的片段只對緊接的那一個標點透明：這個按鍵又送出了別的文字就不算了。
@@ -388,32 +581,67 @@ public struct InputEngine: Sendable {
     }
 
     /// 這個按鍵若是一次可對調寬度的標點送出，就送出並記下紀錄；不是就回傳 nil，引擎完全沒動過。
-    /// 條件：設定開啟、不在半形層或反查裡，按的是鍵面有兩種寬度的標點鍵。
+    /// 條件：設定開啟、不在半形層或疊加層裡，按的是鍵面有兩種寬度的標點鍵。
     /// 有沒有緩衝、在不在片段裡、半形標點設定開不開都不影響。
     /// `Ctrl` 加標點與 `Option` 單次半形已經指定了寬度，不走這裡。
     private mutating func commitPunctuationRevertibly(_ input: KeyInput) -> StepEffect? {
-        guard configuration.revertEnabled, readingLookup == nil, !isLiteralLayer,
+        guard configuration.revertEnabled, layer == nil, !isLiteralLayer,
               case .character(let ch) = input,
               let fullwidth = PunctuationMapper.fullwidthForm(for: ch) else {
             return nil
         }
         let snapshot = revertSnapshot
+        // 送出之後鏡像可能剛好超過上限被裁，要看的是掃描當下的鏡像。
+        let wasClipped = mirrorIsClipped
         var chosen = self
-        let effect = chosen.handlePunctuation(ch)
+        let (effect, closedPair) = chosen.punctuate(ch)
         guard let text = effect.committedText, let core = effect.committedCore else {
             // 純中文模式只有前綴時句點不送出任何東西，沒有東西可對調。
             return nil
         }
-        let wasFullwidth = core == fullwidth
         self = chosen
-        revertRecord = RevertRecord(
-            snapshot: snapshot,
-            kind: .punctuationWidth(key: ch, swapToFullwidth: !wasFullwidth),
-            committedText: text,
-            committedCore: core,
-            alternativeCore: wasFullwidth ? String(ch) : fullwidth
-        )
-        // 標點寬度對調不顯示提示：每個標點都跳一行太吵。
+        if let closedPair {
+            // 配到開頭的結尾不能只換自己，那會留下不成對的結果。紀錄記的是整段，
+            // 外層讀回確認的也是整段。
+            let cycle = PairStyle.cycle(from: closedPair.style)
+            revertRecord = RevertRecord(
+                snapshot: snapshot,
+                kind: .pair(PairSwitch(side: .closer, origin: closedPair.style, current: closedPair.style, step: .typed)),
+                committedText: closedPair.span,
+                committedCore: core,
+                alternativeCore: String(cycle[1].closer)
+            )
+        } else if ch == "[", let opened = core.first.flatMap(PairStyle.style(opening:)) {
+            // 開頭有八種可選，不只兩種寬度。循環從剛打出來的這一種出發。
+            revertRecord = RevertRecord(
+                snapshot: snapshot,
+                kind: .pair(PairSwitch(side: .opener, origin: opened, current: opened, step: .typed)),
+                committedText: text,
+                committedCore: core,
+                alternativeCore: String(PairStyle.cycle(from: opened)[1].opener)
+            )
+        } else if ch == "]", wasClipped, core != String(ch) {
+            // 掃到鏡像開頭都沒有開頭，但鏡像之前還有看不到的前文，而語境給的是全形結尾：
+            // 它可能正是那個看不到的開頭的結尾，換成半形就不成對了，所以不留寬度紀錄。
+            // 鏡像完整時掃到開頭就是確定沒有開頭，走下面的寬度對調。
+            revertRecord = RevertRecord(
+                snapshot: snapshot,
+                kind: .unresolvedCloser,
+                committedText: text,
+                committedCore: core,
+                alternativeCore: core
+            )
+        } else {
+            let wasFullwidth = core == fullwidth
+            revertRecord = RevertRecord(
+                snapshot: snapshot,
+                kind: .punctuationWidth(key: ch, swapToFullwidth: !wasFullwidth),
+                committedText: text,
+                committedCore: core,
+                alternativeCore: wasFullwidth ? String(ch) : fullwidth
+            )
+        }
+        // 標點寬度對調不顯示提示：每個標點都跳一行太吵。成對符號也等到第一次切換才顯示選項列。
         return makeEffect(
             committedText: text,
             committedCore: core,
@@ -429,7 +657,7 @@ public struct InputEngine: Sendable {
     /// 而且另一邊會送出不同的文字。
     private mutating func commitTrackRevertibly(_ input: KeyInput) -> StepEffect? {
         guard configuration.revertEnabled, configuration.mixedModeEnabled,
-              readingLookup == nil, !isLiteralLayer,
+              layer == nil, !isLiteralLayer,
               input == .space || input == .tab,
               state == .composingDual || state == .selectingCandidate,
               !visibleCandidates().isEmpty else {
@@ -475,20 +703,57 @@ public struct InputEngine: Sendable {
 
     /// 反悔：回到送出前的狀態，再送出另一邊或另一個寬度。結果與當初直接那樣送出完全相同
     /// （空格、標點語境、學習紀錄都重算），只差紀錄仍在，再按一次會換回來。
-    private mutating func revert(_ record: RevertRecord) -> StepEffect? {
+    /// `picked` 是數字直選指定的種類；沒有就照循環走到下一種。
+    private mutating func revert(_ record: RevertRecord, picked: PairStyle? = nil) -> StepEffect? {
         let oldDocument = documentText
         var restored = self
         restored.restore(record.snapshot)
 
         let effect: StepEffect
         let nextKind: RevertRecord.Kind
+        // 再按一次會換成什麼。只有兩種可換時就是換回現在這一個。
+        var nextAlternative = record.committedCore
+        var pairChoice: PairChoice?
         switch record.kind {
         case .track(let side, let englishStyle):
             effect = restored.commit(side: side.opposite, englishStyle: englishStyle)
             nextKind = .track(side: side.opposite, englishStyle: englishStyle)
         case .punctuationWidth(let key, let swapToFullwidth):
-            effect = restored.handlePunctuation(key, widthOverride: swapToFullwidth ? .fullwidth : .halfwidth)
+            effect = restored.handlePunctuation(key, forced: swapToFullwidth ? .fullwidth : .halfwidth)
             nextKind = .punctuationWidth(key: key, swapToFullwidth: !swapToFullwidth)
+        case .pair(let pair):
+            // 順序看剛打出來時的種類，不看目前這一種：半形方括號起點的第一下才會固定是換寬度。
+            let cycle = PairStyle.cycle(from: pair.origin)
+            let position = cycle.firstIndex(of: pair.current) ?? 0
+            let target = picked ?? cycle[(position + 1) % cycle.count]
+            let following = cycle[((cycle.firstIndex(of: target) ?? 0) + 1) % cycle.count]
+            // 選完就不再收數字：連續打數字時只有第一個被當成選種類，其餘是內容。
+            let step: PairSwitch.Step = picked == nil ? .cycled : .picked
+            switch pair.side {
+            case .opener:
+                effect = restored.handlePunctuation("[", forced: .style(target))
+                nextAlternative = String(following.opener)
+            case .closer:
+                // 整段要讓宿主一次取代，所以只換短而單純的：太長、跨行或夾著附件就不換。
+                // 換不了時吃掉按鍵、文件不變，絕不單獨換結尾；紀錄在 `handle` 開頭已經清掉，
+                // 再按一次就是一般空白。效果帶著原因，外層才有東西可以提示。
+                let span = record.committedText
+                guard span.count <= Self.pairSwitchSpanLimit,
+                      !span.contains(where: { $0.isNewline || $0 == "\u{FFFC}" }) else {
+                    return makeEffect(committedText: nil, committedCore: nil, commitKind: .none,
+                                      deletedBackwardCount: 0, handled: true,
+                                      pairSwitchNotice: .spanUnsupported)
+                }
+                effect = restored.handlePunctuation("]", forced: .style(target))
+                nextAlternative = String(following.closer)
+            }
+            nextKind = .pair(PairSwitch(side: pair.side, origin: pair.origin, current: target, step: step))
+            pairChoice = PairChoice(current: target, digitsPick: pair.side == .closer && step == .cycled)
+        case .unresolvedCloser:
+            // 開頭可能在看不到的前文裡，換了寬度就可能留下不成對的結果。與整段換不了同一條路。
+            return makeEffect(committedText: nil, committedCore: nil, commitKind: .none,
+                              deletedBackwardCount: 0, handled: true,
+                              pairSwitchNotice: .spanUnsupported)
         }
         guard let core = effect.committedCore,
               let text = Self.replacementText(
@@ -505,9 +770,9 @@ public struct InputEngine: Sendable {
             kind: nextKind,
             committedText: text,
             committedCore: core,
-            alternativeCore: record.committedCore
+            alternativeCore: nextAlternative
         )
-        // 中英對調才提示；標點寬度對調不提示，但同樣可以再對調回去。
+        // 中英對調才提示；標點寬度對調不提示，但同樣可以再對調回去。成對符號改用選項列。
         let showsHint: Bool
         if case .track = nextKind { showsHint = true } else { showsHint = false }
         return makeEffect(
@@ -517,20 +782,28 @@ public struct InputEngine: Sendable {
             deletedBackwardCount: record.committedText.count,
             handled: true,
             revertible: true,
-            revertPreview: showsHint ? record.committedCore : nil
+            revertPreview: showsHint ? record.committedCore : nil,
+            pairChoice: pairChoice
         )
     }
 
     private mutating func dispatch(_ input: KeyInput) -> StepEffect {
-        if readingLookup != nil {
+        switch layer {
+        case .readingLookup:
             return handleReadingLookupKey(input)
+        case .symbolPanel(let panel):
+            return handleSymbolPanelKey(input, panel: panel)
+        case nil:
+            break
         }
 
         switch input {
         case .toggleReadingLookup:
             return handleToggleReadingLookup()
-        case .pageUp, .pageDown, .readingLookupPick:
-            // 反查沒開啟時這些鍵不屬於輸入法。外層本來就只在開啟時才送它們。
+        case .toggleSymbolPanel:
+            return handleToggleSymbolPanel()
+        case .pageUp, .pageDown, .panelPick, .acceptChineseContinuation:
+            // 疊加層沒開啟時這些鍵不屬於輸入法。外層本來就只在開啟時才送它們。
             return passthroughOrSwallowEffect()
         case .capsLock(let isOn):
             return handleCapsLock(isOn)
@@ -596,7 +869,8 @@ public struct InputEngine: Sendable {
             return handleArrowUp()
         case .capsLock, .doubleShift, .ctrlFullwidth, .ctrlLeftBracket, .ctrlRightBracket,
              .ctrlShiftLeftBracket, .ctrlShiftRightBracket, .optionLiteral, .selectEnglishPrediction,
-             .toggleReadingLookup, .pageUp, .pageDown, .readingLookupPick:
+             .toggleReadingLookup, .toggleSymbolPanel, .pageUp, .pageDown, .panelPick,
+             .acceptChineseContinuation:
             return passthroughOrSwallowEffect()
         }
     }
@@ -606,8 +880,117 @@ public struct InputEngine: Sendable {
         guard !isLiteralLayer else {
             return passthroughEffect()
         }
-        readingLookup = ReadingLookup(scheme: configuration.readingScheme)
+        layer = .readingLookup(ReadingLookup(scheme: configuration.readingScheme))
         return swallowEffect()
+    }
+
+    /// 開啟符號面板，停在「最近使用」的第一列。Caps Lock 亮燈或純英文直通時交還宿主的快捷鍵。
+    private mutating func handleToggleSymbolPanel() -> StepEffect {
+        guard !isLiteralLayer else {
+            return passthroughEffect()
+        }
+        layer = .symbolPanel(SymbolPanel())
+        return swallowEffect()
+    }
+
+    /// 符號面板開啟期間的全部按鍵。除了選取，一律不動主組字、文件與待收合空格，
+    /// 也絕不回傳 `handled: false`。
+    private mutating func handleSymbolPanelKey(_ input: KeyInput, panel: SymbolPanel) -> StepEffect {
+        var panel = panel
+        let perPage = SymbolPanel.rowsPerPage
+
+        switch input {
+        case .escape, .toggleSymbolPanel:
+            layer = nil
+            return swallowEffect()
+
+        case .capsLock(let isOn):
+            // 燈號真的改變時先關閉面板，再照原本的 Caps Lock 流程處理。
+            guard isOn != capsLockEnabled else {
+                return swallowEffect()
+            }
+            layer = nil
+            return handleCapsLock(isOn)
+
+        case .character(let ch):
+            // 數字一律直選本頁的列；其他字元不屬於面板，吃掉。
+            guard ch.isASCII, let row = ch.wholeNumberValue, (1...perPage).contains(row) else {
+                return swallowEffect()
+            }
+            return commitSymbol(at: panel.pageIndex * perPage + row - 1)
+
+        case .panelPick(let row):
+            guard (1...perPage).contains(row) else {
+                return swallowEffect()
+            }
+            return commitSymbol(at: panel.pageIndex * perPage + row - 1)
+
+        case .space, .enter:
+            return commitSymbol(at: panel.focusIndex)
+
+        case .tab:
+            panel = SymbolPanel(tab: panel.tab.next)
+
+        case .arrowDown:
+            if panel.focusIndex + 1 < symbolPanelEntries().count {
+                panel.focusIndex += 1
+            }
+
+        case .arrowUp:
+            if panel.focusIndex > 0 {
+                panel.focusIndex -= 1
+            }
+
+        case .pageDown:
+            let nextPageStart = (panel.pageIndex + 1) * perPage
+            if nextPageStart < symbolPanelEntries().count {
+                panel.focusIndex = nextPageStart
+            }
+
+        case .pageUp:
+            if panel.pageIndex > 0 {
+                panel.focusIndex = (panel.pageIndex - 1) * perPage
+            }
+
+        case .backspace, .shiftSpace, .toggleReadingLookup, .acceptChineseContinuation, .doubleShift,
+             .ctrlFullwidth, .ctrlLeftBracket, .ctrlRightBracket, .ctrlShiftLeftBracket, .ctrlShiftRightBracket,
+             .optionLiteral, .selectEnglishPrediction:
+            return swallowEffect()
+        }
+
+        layer = .symbolPanel(panel)
+        return swallowEffect()
+    }
+
+    /// 選取符號：等同按下一個會直接打出那個符號的標點鍵。底下的組字怎麼結束與逗號鍵相同，
+    /// 走的是同一個 `settleComposition`，學習紀錄也照它記；再送出符號，不留反悔紀錄。
+    private mutating func commitSymbol(at index: Int) -> StepEffect {
+        let entries = symbolPanelEntries()
+        guard entries.indices.contains(index) else {
+            return swallowEffect()
+        }
+        let symbol = entries[index].symbol
+        layer = nil
+        let prefixText = settleComposition(keepingRawLetters: false)
+        // 結束組字之後就不會再有待收合的空格，所以收合與前綴不會同時發生。
+        var deletedCount = 0
+        if PunctuationMapper.collapsesPendingAutoSpace(emitting: symbol),
+           pendingAutoSpace, documentText.hasSuffix(" ") {
+            documentText.removeLast()
+            deletedCount = 1
+        }
+        // 使用者明確挑了這個符號，片段裡也照樣送出；按下符號就解除黏中。
+        let emitted = emitText(core: symbol, outgoing: .punctuation, appendTrailingSpace: false)
+        setSnippetStickyChinese(false)
+        // 最近使用不是候選學習，不受三個學習開關管。
+        usageHistory.recordSymbol(symbol)
+        return makeEffect(
+            committedText: prefixText + emitted.full,
+            committedCore: emitted.core,
+            commitKind: .punctuation,
+            deletedBackwardCount: deletedCount,
+            handled: true
+        )
     }
 
     /// 反查開啟期間的全部按鍵。除了選字，一律不動主組字、文件與待收合空格，
@@ -619,7 +1002,7 @@ public struct InputEngine: Sendable {
 
         switch input {
         case .escape, .toggleReadingLookup:
-            readingLookup = nil
+            layer = nil
             return swallowEffect()
 
         case .capsLock(let isOn):
@@ -627,7 +1010,7 @@ public struct InputEngine: Sendable {
             guard isOn != capsLockEnabled else {
                 return swallowEffect()
             }
-            readingLookup = nil
+            layer = nil
             return handleCapsLock(isOn)
 
         case .character(let ch):
@@ -657,7 +1040,7 @@ public struct InputEngine: Sendable {
         case .enter:
             return pickFocusedReadingLookupRow()
 
-        case .readingLookupPick(let row):
+        case .panelPick(let row):
             return pickReadingLookupRow(row)
 
         case .tab:
@@ -670,22 +1053,19 @@ public struct InputEngine: Sendable {
             lookup.scheme = next
             lookup.focusIndex = 0
             lookup.isSelecting = false
-            readingLookup = lookup
+            layer = .readingLookup(lookup)
             configuration.readingScheme = next
             return swallowEffect()
 
         case .arrowDown:
-            let total = readingLookupCandidates().count
-            guard total > 0 else {
-                return swallowEffect()
-            }
-            if !lookup.isSelecting {
+            let candidates = readingLookupCandidates()
+            if !candidates.isEmpty, !lookup.isSelecting {
                 lookup.isSelecting = true
-            } else if lookup.focusIndex + 1 < total {
+            } else if lookup.focusIndex + 1 < candidates.count {
                 lookup.focusIndex += 1
             }
-            readingLookup = lookup
-            return swallowEffect()
+            layer = .readingLookup(lookup)
+            return swallowEffect(readingCandidates: candidates)
 
         case .arrowUp:
             guard lookup.isSelecting else {
@@ -696,29 +1076,31 @@ public struct InputEngine: Sendable {
             } else {
                 lookup.focusIndex -= 1
             }
-            readingLookup = lookup
+            layer = .readingLookup(lookup)
             return swallowEffect()
 
         case .pageDown:
             let perPage = ReadingLookup.rowsPerPage
             let nextPageStart = (lookup.pageIndex + 1) * perPage
-            guard nextPageStart < readingLookupCandidates().count else {
-                return swallowEffect()
+            let candidates = readingLookupCandidates()
+            if nextPageStart < candidates.count {
+                lookup.focusIndex = nextPageStart
+                layer = .readingLookup(lookup)
             }
-            lookup.focusIndex = nextPageStart
-            readingLookup = lookup
-            return swallowEffect()
+            return swallowEffect(readingCandidates: candidates)
 
         case .pageUp:
             guard lookup.pageIndex > 0 else {
                 return swallowEffect()
             }
             lookup.focusIndex = (lookup.pageIndex - 1) * ReadingLookup.rowsPerPage
-            readingLookup = lookup
+            layer = .readingLookup(lookup)
             return swallowEffect()
 
-        case .shiftSpace, .doubleShift, .ctrlFullwidth, .ctrlLeftBracket, .ctrlRightBracket,
-             .ctrlShiftLeftBracket, .ctrlShiftRightBracket, .optionLiteral, .selectEnglishPrediction:
+        case .acceptChineseContinuation, .shiftSpace, .doubleShift, .ctrlFullwidth, .ctrlLeftBracket, .ctrlRightBracket,
+             .ctrlShiftLeftBracket, .ctrlShiftRightBracket, .optionLiteral, .selectEnglishPrediction,
+             .toggleSymbolPanel:
+            // 兩個疊加層不同時開啟：反查開著時符號面板的開關鍵吃掉、不動。
             return swallowEffect()
         }
     }
@@ -728,7 +1110,7 @@ public struct InputEngine: Sendable {
         var next = lookup
         next.focusIndex = 0
         next.isSelecting = false
-        readingLookup = next
+        layer = .readingLookup(next)
         return swallowEffect()
     }
 
@@ -765,7 +1147,7 @@ public struct InputEngine: Sendable {
         guard candidates.indices.contains(index) else {
             return swallowEffect()
         }
-        readingLookup = nil
+        layer = nil
         clearComposingToIdle()
         let character = candidates[index].character
         if configuration.learnsReadingLookupOrder {
@@ -1083,18 +1465,36 @@ public struct InputEngine: Sendable {
         return characterBefore.map(PunctuationContextOverride.character) ?? .unknown
     }
 
+    /// Shift+空白 對調時指定的寫法。寬度只有兩種的標點指定寬度；方括號有八種，指定的是種類。
+    /// 兩者都只換標點本身，前綴與空格的收合照這個鍵原本的規則。
+    private enum PunctuationOverride: Equatable {
+        case halfwidth
+        case fullwidth
+        case style(PairStyle)
+    }
+
     /// `optionHalfwidth` 是 Option 單次半形：除了出半形，前面的組字也送原字母。
-    /// `widthOverride` 是 Shift+空白 對調指定的寬度，只換標點本身，前綴照這個鍵原本的規則。
+    /// `forced` 是 Shift+空白 對調指定的寫法。
     private mutating func handlePunctuation(
         _ ch: Character,
         optionHalfwidth: Bool = false,
-        widthOverride: PunctuationWidth? = nil
+        forced: PunctuationOverride? = nil
     ) -> StepEffect {
+        punctuate(ch, optionHalfwidth: optionHalfwidth, forced: forced).effect
+    }
+
+    /// `handlePunctuation` 的本體。`closedPair` 只在右方括號配到未關閉的開頭時有值：
+    /// 配到的種類，以及鏡像上從那個開頭到剛送出的結尾的整段。
+    private mutating func punctuate(
+        _ ch: Character,
+        optionHalfwidth: Bool = false,
+        forced: PunctuationOverride? = nil
+    ) -> (effect: StepEffect, closedPair: (style: PairStyle, span: String)?) {
         let isPeriod = ch == "."
         if isPeriod, !optionHalfwidth, !configuration.mixedModeEnabled,
            state == .composingDual, visibleCandidates().isEmpty {
             // 純中文模式只有前綴：保留組字，讓使用者把碼打完。
-            return swallowEffect()
+            return (swallowEffect(), nil)
         }
 
         // 混打時句點與單次半形代表英文名稱還沒結束（`my.file`、`os.path`），送出原字母。
@@ -1104,15 +1504,57 @@ public struct InputEngine: Sendable {
             keepingRawLetters: configuration.mixedModeEnabled && (isPeriod || optionHalfwidth)
         )
 
+        // 右方括號先找游標前未關閉的開頭，片段裡只看片段內。開頭是使用者明確選的，
+        // 所以跟隨它優先於片段的半形與半形標點設定；Option 單次半形與對調指定的寬度照字面。
+        var closedStyle: PairStyle?
+        var openerToCursor = 0
+        if ch == "]", !optionHalfwidth {
+            let found = PunctuationMapper.unclosedPairOpener(in: documentText, stopAtBacktick: wasInSnippet)
+            switch forced {
+            case nil:
+                if let found {
+                    closedStyle = found.style
+                    openerToCursor = documentText[found.index...].count
+                }
+            case .style(let target):
+                // 成對切換：開頭跟著換成同一種。結尾直接照指定的種類送出，不拿換過的開頭重掃，
+                // 內容裡那一種的落單結尾才不會被算進來。找不到開頭就什麼都不送。
+                guard let found else {
+                    return (swallowEffect(), nil)
+                }
+                openerToCursor = documentText[found.index...].count
+                documentText.replaceSubrange(found.index...found.index, with: String(target.opener))
+                closedStyle = target
+            case .halfwidth, .fullwidth:
+                break
+            }
+        }
+
         let mapped: PunctuationResult
-        if let widthOverride {
-            // 對調指定的寬度優先於語境、半形標點設定與片段規則；空格的收合只看鍵，兩個寬度相同。
-            mapped = PunctuationMapper.map(
-                character: ch,
-                documentText: documentText,
-                pendingAutoSpace: pendingAutoSpace,
-                width: widthOverride
+        if let closedStyle {
+            // 空格的收合只看鍵，跟隨哪一種都一樣；片段裡的空格是內容，不收合。
+            mapped = PunctuationResult(
+                text: String(closedStyle.closer),
+                shouldCollapsePendingAutoSpace: !wasInSnippet && pendingAutoSpace
+                    && documentText.hasSuffix(" ") && PunctuationMapper.collapsesPendingAutoSpace(ch)
             )
+        } else if let forced {
+            // 對調指定的寫法優先於語境、半形標點設定與片段規則；空格的收合只看鍵，哪一種寫法都相同。
+            switch forced {
+            case .halfwidth, .fullwidth:
+                mapped = PunctuationMapper.map(
+                    character: ch,
+                    documentText: documentText,
+                    pendingAutoSpace: pendingAutoSpace,
+                    width: forced == .fullwidth ? .fullwidth : .halfwidth
+                )
+            case .style(let style):
+                mapped = PunctuationResult(
+                    text: String(ch == "]" ? style.closer : style.opener),
+                    shouldCollapsePendingAutoSpace: pendingAutoSpace && documentText.hasSuffix(" ")
+                        && PunctuationMapper.collapsesPendingAutoSpace(ch)
+                )
+            }
         } else if wasInSnippet {
             // 片段裡的標點一律半形，也不收合前面的空格。
             mapped = PunctuationResult(text: String(ch), shouldCollapsePendingAutoSpace: false)
@@ -1140,13 +1582,19 @@ public struct InputEngine: Sendable {
             setSnippetStickyChinese(false)
         }
 
-        return makeEffect(
+        let effect = makeEffect(
             committedText: prefixText + mapped.text,
             committedCore: mapped.text,
             commitKind: .punctuation,
             deletedBackwardCount: deletedCount,
             handled: true
         )
+        guard let closedStyle else {
+            return (effect, nil)
+        }
+        // 開頭之後只少了收合掉的空格、多了一個結尾。
+        let span = String(documentText.suffix(openerToCursor - deletedCount + 1))
+        return (effect, (closedStyle, span))
     }
 
     private mutating func handleSpace() -> StepEffect {
@@ -1373,7 +1821,8 @@ public struct InputEngine: Sendable {
             for: prefix,
             limit: limit,
             includeDeveloperTerms: configuration.developerVocabularyEnabled,
-            usage: configuration.learnsEnglishPredictions ? usageHistory : UsageHistory()
+            usage: configuration.learnsEnglishPredictions ? usageHistory : UsageHistory(),
+            personalTerms: configuration.personalTermsEnabled ? configuration.personalTerms : .empty
         )
     }
 
@@ -1473,8 +1922,9 @@ public struct InputEngine: Sendable {
     }
 
     /// A handled key with no visible effect.
-    private func swallowEffect() -> StepEffect {
-        makeEffect(committedText: nil, committedCore: nil, commitKind: .none, deletedBackwardCount: 0, handled: true)
+    private func swallowEffect(readingCandidates: [ReadingCandidate]? = nil) -> StepEffect {
+        makeEffect(committedText: nil, committedCore: nil, commitKind: .none, deletedBackwardCount: 0,
+                   handled: true, readingCandidates: readingCandidates)
     }
 
     /// Keys may only be forwarded to the client when nothing is composing. Otherwise the
@@ -1517,7 +1967,10 @@ public struct InputEngine: Sendable {
         deletedBackwardCount: Int,
         handled: Bool,
         revertible: Bool = false,
-        revertPreview: String? = nil
+        revertPreview: String? = nil,
+        pairChoice: PairChoice? = nil,
+        pairSwitchNotice: PairSwitchNotice? = nil,
+        readingCandidates: [ReadingCandidate]? = nil
     ) -> StepEffect {
         StepEffect(
             state: state,
@@ -1527,12 +1980,15 @@ public struct InputEngine: Sendable {
             commitKind: commitKind,
             deletedBackwardCount: deletedBackwardCount,
             overlay: currentOverlay,
-            readingLookupPanel: currentReadingLookupPanel,
+            readingLookupPanel: readingLookupPanel(candidates: readingCandidates),
+            symbolPanel: currentSymbolPanelContent,
             handled: handled,
             documentText: documentText,
             pendingAutoSpace: pendingAutoSpace,
             revertible: revertible,
-            revertPreview: revertPreview
+            revertPreview: revertPreview,
+            pairChoice: pairChoice,
+            pairSwitchNotice: pairSwitchNotice
         )
     }
 }

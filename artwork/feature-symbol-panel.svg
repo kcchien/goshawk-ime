@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 310" width="960" height="310" role="img" aria-label="符號面板示意圖：按 Option 加 Shift 加 B 開啟三個分頁，數字鍵直接選取全形與半形標點符號">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F3236"/>
+      <stop offset="100%" stop-color="#204E4E"/>
+    </linearGradient>
+    <filter id="winShadow" x="-8%" y="-8%" width="116%" height="122%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#061416" flood-opacity="0.34"/>
+    </filter>
+    <filter id="popShadow" x="-8%" y="-10%" width="116%" height="126%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0A1A1C" flood-opacity="0.22"/>
+    </filter>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Noto Sans TC", sans-serif; }
+      .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+    </style>
+  </defs>
+
+  <rect width="960" height="310" rx="16" fill="url(#bg)"/>
+
+  <!-- Left narrative panel with separate physical keycaps -->
+  <text x="40" y="72" class="sans" font-size="28" font-weight="600" fill="#F4F0DA">符號面板</text>
+  <text x="40" y="102" class="sans" font-size="14" fill="#8FB8A5">與 macOS 內建倉頡同一組開關鍵</text>
+
+  <!-- Row 1: Option + Shift + B as 3 separate keycaps -->
+  <g transform="translate(40, 128)">
+    <rect x="0" y="0" width="66" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="33" y="21" text-anchor="middle" class="sans" font-size="12.5" font-weight="600" fill="#F4F0DA">⌥ Opt</text>
+    <text x="77" y="21" text-anchor="middle" class="sans" font-size="13" fill="#8FB8A5">+</text>
+    <rect x="88" y="0" width="68" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="122" y="21" text-anchor="middle" class="sans" font-size="12.5" font-weight="600" fill="#F4F0DA">⇧ Shift</text>
+    <text x="167" y="21" text-anchor="middle" class="sans" font-size="13" fill="#8FB8A5">+</text>
+    <rect x="178" y="0" width="32" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="194" y="21" text-anchor="middle" class="mono" font-size="14" font-weight="700" fill="#E6AA56">B</text>
+    <text x="224" y="21" class="sans" font-size="14.5" fill="#F4F0DA">就地叫出面板</text>
+  </g>
+
+  <!-- Row 2: Tab & Arrow keycaps -->
+  <g transform="translate(40, 176)">
+    <rect x="0" y="0" width="66" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="33" y="21" text-anchor="middle" class="sans" font-size="12.5" font-weight="600" fill="#F4F0DA">⇥ Tab</text>
+    <rect x="76" y="0" width="32" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="92" y="21" text-anchor="middle" class="sans" font-size="14" font-weight="700" fill="#F4F0DA">←</text>
+    <rect x="114" y="0" width="32" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="130" y="21" text-anchor="middle" class="sans" font-size="14" font-weight="700" fill="#F4F0DA">→</text>
+    <text x="162" y="21" class="sans" font-size="14.5" fill="#F4F0DA">切分頁與翻頁</text>
+  </g>
+
+  <!-- Row 3: 1 to 9 keycaps -->
+  <g transform="translate(40, 224)">
+    <rect x="0" y="0" width="32" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="16" y="21" text-anchor="middle" class="mono" font-size="14" font-weight="700" fill="#E6AA56">1</text>
+    <text x="44" y="21" text-anchor="middle" class="sans" font-size="13" fill="#8FB8A5">至</text>
+    <rect x="56" y="0" width="32" height="32" rx="6" fill="rgba(255,255,255,0.12)" stroke="rgba(244,240,218,0.36)"/>
+    <text x="72" y="21" text-anchor="middle" class="mono" font-size="14" font-weight="700" fill="#E6AA56">9</text>
+    <text x="104" y="21" class="sans" font-size="14.5" fill="#F4F0DA">數字直選，常用往前排</text>
+  </g>
+
+  <!-- Right panel showcase -->
+  <g transform="translate(424, 24)" filter="url(#winShadow)">
+    <rect width="496" height="262" rx="12" fill="#FFFFFF"/>
+    <path d="M12 0 H484 A12 12 0 0 1 496 12 V34 H0 V12 A12 12 0 0 1 12 0 Z" fill="#F3F3F1"/>
+    <line x1="0" y1="34" x2="496" y2="34" stroke="#E2E2DE" stroke-width="1"/>
+    <circle cx="20" cy="17" r="5" fill="#FF5F57"/>
+    <circle cx="37" cy="17" r="5" fill="#FEBC2E"/>
+    <circle cx="54" cy="17" r="5" fill="#28C840"/>
+    <text x="248" y="21" text-anchor="middle" class="sans" font-size="12" font-weight="500" fill="#5A6364">會議紀錄.txt</text>
+
+    <text x="24" y="72" class="sans" font-size="20" fill="#162223">待辦清單</text>
+    <rect x="108" y="51" width="2" height="24" rx="1" fill="#215C52"/>
+
+    <g transform="translate(114, 48)" filter="url(#popShadow)">
+      <rect width="346" height="200" rx="10" fill="#F8F8F5" stroke="rgba(15,50,54,0.18)" stroke-width="1"/>
+      <rect x="12" y="10" width="204" height="24" rx="6" fill="#E6E7E2"/>
+      <rect x="14" y="12" width="76" height="20" rx="5" fill="#FFFFFF"/>
+      <text x="52" y="26" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#162223">最近使用</text>
+      <text x="122" y="26" text-anchor="middle" class="sans" font-size="11.5" fill="#4E6062">標點</text>
+      <text x="182" y="26" text-anchor="middle" class="sans" font-size="11.5" fill="#4E6062">符號</text>
+      <text x="334" y="26" text-anchor="end" class="sans" font-size="11" fill="#6B7D7F">151 個符號</text>
+
+      <line x1="12" y1="42" x2="334" y2="42" stroke="rgba(15,50,54,0.12)" stroke-width="1"/>
+
+      <text x="30" y="64" class="sans" font-size="11" fill="#6B7D7F">1</text>
+      <text x="50" y="66" class="sans" font-size="16" font-weight="500" fill="#162223">——</text>
+      <text x="100" y="65" class="sans" font-size="13" fill="#162223">破折號</text>
+
+      <rect x="10" y="74" width="326" height="26" rx="5" fill="#215C52"/>
+      <text x="17" y="91" class="sans" font-size="11" font-weight="700" fill="#FFFFFF">▸</text>
+      <text x="30" y="91" class="sans" font-size="11" font-weight="600" fill="#FFFFFF">2</text>
+      <text x="50" y="93" class="sans" font-size="16" font-weight="700" fill="#FFFFFF">……</text>
+      <text x="100" y="92" class="sans" font-size="13" font-weight="600" fill="#FFFFFF">刪節號</text>
+
+      <text x="30" y="117" class="sans" font-size="11" fill="#6B7D7F">3</text>
+      <text x="50" y="119" class="sans" font-size="16" font-weight="500" fill="#162223">‧</text>
+      <text x="100" y="118" class="sans" font-size="13" fill="#162223">間隔號</text>
+
+      <text x="30" y="143" class="sans" font-size="11" fill="#6B7D7F">4</text>
+      <text x="50" y="145" class="sans" font-size="16" font-weight="500" fill="#162223">〔</text>
+      <text x="100" y="144" class="sans" font-size="13" fill="#162223">左六角括號</text>
+
+      <text x="30" y="169" class="sans" font-size="11" fill="#6B7D7F">5</text>
+      <text x="50" y="171" class="sans" font-size="16" font-weight="500" fill="#162223">〕</text>
+      <text x="100" y="170" class="sans" font-size="13" fill="#162223">右六角括號</text>
+
+      <text x="14" y="191" class="sans" font-size="10.5" fill="#6B7D7F">第 1 頁，共 1 頁  1–9 選取  ←→ 翻頁  Tab 切換分頁  Esc 關閉</text>
+    </g>
+  </g>
+</svg>

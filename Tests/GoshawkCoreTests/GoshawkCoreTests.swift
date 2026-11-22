@@ -1018,7 +1018,39 @@ struct ReadingIndexTests {
         }
     }
 
-    @Test("五種聲調各自成列，不指定聲調時依一到輕聲串接並依字去重")
+    @Test("全表每個音節不指定聲調時，候選都是各聲調候選的無重複聯集")
+    func tonelessIsUnionOfTones() {
+        var failures: [String] = []
+        for bopomofo in Set(index.tonedQueries.map(\.bopomofo)) {
+            let merged = index.characters(for: ReadingQuery(bopomofo: bopomofo, tone: nil))
+            let union = Set(Tone.allCases.flatMap {
+                index.characters(for: ReadingQuery(bopomofo: bopomofo, tone: $0))
+            })
+            if Set(merged) != union || merged.count != union.count {
+                failures.append(bopomofo)
+            }
+        }
+        #expect(failures.isEmpty, "不是無重複聯集的音節：\(failures.sorted().prefix(5))")
+    }
+
+    @Test("讀音表沒有不指定聲調的列時依一到輕聲串接，有就照那一列，而且那一列不算帶調音節")
+    func tonelessRowIsOptional() {
+        let toned = "ㄇㄚ\tma\t1\t媽摩\nㄇㄚ\tma\t3\t馬嗎\nㄇㄚ\tma\t5\t嗎麼"
+        let anyTone = ReadingQuery(bopomofo: "ㄇㄚ", tone: nil)
+
+        let concatenated = ReadingIndex(readingsTSV: toned, nativeCodesTSV: "")
+        #expect(concatenated.characters(for: anyTone) == ["媽", "摩", "馬", "嗎", "麼"])
+
+        let ordered = ReadingIndex(readingsTSV: "ㄇㄚ\tma\t0\t馬嗎媽麼摩\n" + toned, nativeCodesTSV: "")
+        #expect(ordered.characters(for: anyTone) == ["馬", "嗎", "媽", "麼", "摩"])
+        #expect(ordered.characters(for: ReadingQuery(bopomofo: "ㄇㄚ", tone: .first)) == ["媽", "摩"])
+        #expect(ordered.tonedSyllableCount == 3)
+        #expect(ordered.tonedQueries.allSatisfy { $0.tone != nil })
+        #expect(ordered.characterCount == concatenated.characterCount)
+        #expect(ordered.interpret("ma", scheme: .pinyin) == .syllable(anyTone))
+    }
+
+    @Test("五種聲調各自成列，不指定聲調時跨聲調依常用度排序並依字去重")
     func tonesAndDeduplication() {
         for tone in Tone.allCases {
             let reading = ReadingQuery(bopomofo: "ㄇㄚ", tone: tone)
@@ -1028,16 +1060,17 @@ struct ReadingIndexTests {
         #expect(index.characters(for: ReadingQuery(bopomofo: "ㄇㄚ", tone: .first)) == ["媽", "嬤", "摩", "螞"])
         #expect(index.characters(for: ReadingQuery(bopomofo: "ㄇㄚ", tone: .neutral)) == ["嗎", "麼", "蟆", "嘛"])
 
-        // 嗎 在三聲與輕聲都有，整份結果只留第一次出現的位置。
+        // 嗎 在三聲與輕聲都有，整份結果只出現一次。各聲調的常用字一起排在前面，
+        // 不是一聲的字全部排完才輪到其他聲調。
         let all = index.characters(for: ReadingQuery(bopomofo: "ㄇㄚ", tone: nil))
-        #expect(all.prefix(3) == ["媽", "嬤", "摩"])
+        #expect(all.prefix(4) == ["馬", "嗎", "麻", "媽"])
         #expect(all.filter { $0 == "嗎" }.count == 1)
         #expect(Set(all).count == all.count)
 
-        // 全字庫只把「兒」標成 ㄦˊ，ㄦ 沒有一聲列，不指定聲調時從二聲接起。
+        // 全字庫只把「兒」標成 ㄦˊ，ㄦ 沒有一聲列，不指定聲調時照樣查得到其他聲調。
         #expect(index.characters(for: ReadingQuery(bopomofo: "ㄦ", tone: .first)).isEmpty)
         let er = index.characters(for: ReadingQuery(bopomofo: "ㄦ", tone: nil))
-        #expect(er.first == "兒")
+        #expect(er.prefix(3) == ["二", "耳", "兒"])
         #expect(er.filter { $0 == "兒" }.count == 1)
 
         // 收錄的音節缺某個聲調時仍是完整讀音，只是沒有候選。
@@ -1385,9 +1418,9 @@ struct ReadingLookupTests {
     func pickingAnEmptyRowDoesNothing() throws {
         var engine = self.engine("LOOKUP y k 3")
         #expect(try #require(engine.currentReadingLookupPanel).rows.count == 1)
-        #expect(engine.handle(.readingLookupPick(9)).commitKind == .none)
+        #expect(engine.handle(.panelPick(9)).commitKind == .none)
         #expect(engine.readingLookup != nil)
-        #expect(engine.handle(.readingLookupPick(1)).committedCore == "怎")
+        #expect(engine.handle(.panelPick(1)).committedCore == "怎")
     }
 
     @Test("面板顯示目前代別的原生碼，缺碼的字仍選得到")
@@ -1416,7 +1449,7 @@ struct ReadingLookupTests {
         let row = try #require(engine.currentReadingLookupPanel?.rows.first { $0.character == "彞" })
         #expect(row.code == nil)
         #expect(row.radicals == nil)
-        #expect(engine.handle(.readingLookupPick(row.number)).committedCore == "彞")
+        #expect(engine.handle(.panelPick(row.number)).committedCore == "彞")
     }
 
     @Test("Caps Lock 亮燈與純英文時，反查快捷鍵交還宿主")

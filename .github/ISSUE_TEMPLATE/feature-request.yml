@@ -1,0 +1,24 @@
+name: 功能與體驗建議（Feature Request）
+description: 提議新功能、標點規則改進或使用體驗優化
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你遇到的打字情境或痛點
+      description: 請描述實際寫作時發生的情況，而不是先假設實作方式。
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望看到的按鍵與結果
+      placeholder: 例如：按某組鍵之後，預期畫面上出現什麼結果
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 補充說明（選填）
+      description: 常搭配使用的軟體、倉頡代別或現有替代做法。

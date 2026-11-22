@@ -1,6 +1,6 @@
 import Foundation
 
-/// 聲調。輕聲排在四聲之後，`allCases` 的順序就是不指定聲調時的候選串接順序。
+/// 聲調。輕聲排在四聲之後。
 public enum Tone: Int, Sendable, Hashable, CaseIterable, Codable {
     case first = 1
     case second
@@ -113,7 +113,12 @@ public struct ReadingIndex: Sendable {
         let v3: [String]
     }
 
+    /// 讀音表裡聲調欄的這個值代表「不指定聲調時的候選順序」。
+    private static let tonelessRowMarker = 0
+
     private let rows: [ReadingQuery: [String]]
+    /// 去調注音到不指定聲調時的候選順序。順序在建置時跨聲調排好，執行期不排序。
+    private let tonelessRows: [String: [String]]
     private let pinyinByBopomofo: [String: String]
     private let bopomofoByPinyin: [String: String]
     private let bopomofoPrefixes: Set<String>
@@ -136,6 +141,7 @@ public struct ReadingIndex: Sendable {
 
     public init(readingsTSV: String, nativeCodesTSV: String) {
         var rows: [ReadingQuery: [String]] = [:]
+        var tonelessRows: [String: [String]] = [:]
         var pinyinByBopomofo: [String: String] = [:]
         var bopomofoByPinyin: [String: String] = [:]
         var bopomofoPrefixes = Set<String>()
@@ -143,9 +149,9 @@ public struct ReadingIndex: Sendable {
 
         for line in readingsTSV.split(whereSeparator: \.isNewline) where !line.hasPrefix("#") {
             let fields = line.split(separator: "\t", omittingEmptySubsequences: false)
-            guard fields.count == 4,
-                  let toneValue = Int(fields[2]),
-                  let tone = Tone(rawValue: toneValue) else { continue }
+            guard fields.count == 4, let toneValue = Int(fields[2]) else { continue }
+            let tone = Tone(rawValue: toneValue)
+            guard tone != nil || toneValue == Self.tonelessRowMarker else { continue }
             let bopomofo = String(fields[0])
             let pinyin = String(fields[1])
             guard !bopomofo.isEmpty, !pinyin.isEmpty, !fields[3].isEmpty else { continue }
@@ -154,6 +160,11 @@ public struct ReadingIndex: Sendable {
             var seen = Set<String>()
             for char in fields[3] where seen.insert(String(char)).inserted {
                 characters.append(String(char))
+            }
+            guard let tone else {
+                // 這一列只決定順序，音節與拼音由帶調的列登記。
+                tonelessRows[bopomofo] = characters
+                continue
             }
             rows[ReadingQuery(bopomofo: bopomofo, tone: tone)] = characters
 
@@ -178,6 +189,7 @@ public struct ReadingIndex: Sendable {
         }
 
         self.rows = rows
+        self.tonelessRows = tonelessRows
         self.pinyinByBopomofo = pinyinByBopomofo
         self.bopomofoByPinyin = bopomofoByPinyin
         self.bopomofoPrefixes = bopomofoPrefixes
@@ -196,10 +208,15 @@ public struct ReadingIndex: Sendable {
         }
     }
 
-    /// 查這個讀音的候選字。不指定聲調時依一、二、三、四、輕聲串接後依字去重。
+    /// 查這個讀音的候選字。不指定聲調時是各聲調候選依字去重的聯集，順序照讀音表為這個
+    /// 音節排好的那一列：各聲調的常用字一起排在前面。讀音表沒有那一列的音節（只有一個
+    /// 聲調，或手寫的小表）依一、二、三、四、輕聲串接。
     public func characters(for query: ReadingQuery) -> [String] {
         if query.tone != nil {
             return rows[query] ?? []
+        }
+        if let ordered = tonelessRows[query.bopomofo] {
+            return ordered
         }
         var merged: [String] = []
         var seen = Set<String>()

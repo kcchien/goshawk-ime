@@ -30,6 +30,11 @@ cp "$BIN_PATH" "$MACOS_DIR/GoshawkApp"
 cp "$ROOT_DIR/artwork/Goshawk.icns" "$ROOT_DIR"/artwork/GoshawkTemplate*.png "$RESOURCES_DIR/"
 # 隨附詞庫的授權要求顯名，散布的套件裡必須帶著授權與來源聲明。
 cp "$ROOT_DIR/LICENSE" "$ROOT_DIR/THIRD_PARTY_NOTICES.md" "$RESOURCES_DIR/"
+# 隨附離線互動說明與 30 秒練習場，零外部請求，從選單與安裝完成頁可直接以瀏覽器開啟。
+mkdir -p "$RESOURCES_DIR/Guide/assets"
+cp "$ROOT_DIR/docs/index.html" "$ROOT_DIR/docs/styles.css" "$ROOT_DIR/docs/app.js" \
+  "$ROOT_DIR/docs/guide.md" "$ROOT_DIR/docs/llms.txt" "$RESOURCES_DIR/Guide/"
+cp "$ROOT_DIR/docs/assets/goshawk.svg" "$RESOURCES_DIR/Guide/assets/"
 chmod +x "$MACOS_DIR/GoshawkApp"
 
 if [[ -d "$RESOURCE_BUNDLE" ]]; then
@@ -151,7 +156,14 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "VERSION 的內容不是「數字.數字.數字」：${VERSION}" >&2
   exit 1
 fi
-/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" -c "Set :CFBundleVersion $VERSION" "$CONTENTS_DIR/Info.plist"
+# 同一發行版可能試用多組引擎或詞庫。用簽章前的執行檔和詞庫辨識實際建置。
+BUILD_DIGEST="$(
+  cd "$BIN_DIR"
+  export LC_ALL=C
+  shasum -a 256 GoshawkApp goshawk-ime_GoshawkCore.bundle/Contents/Resources/*.tsv | shasum -a 256 | cut -c1-16
+)"
+/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" -c "Set :CFBundleVersion $VERSION" \
+  -c "Add :GoshawkBuildIdentifier string ${VERSION}+${BUILD_DIGEST}" "$CONTENTS_DIR/Info.plist"
 
 plutil -lint "$CONTENTS_DIR/Info.plist"
 # 預設是只能在本機執行的臨時簽章。發行版把 GOSHAWK_SIGN_IDENTITY 設成 Developer ID 憑證名稱，
